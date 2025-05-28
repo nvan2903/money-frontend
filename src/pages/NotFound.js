@@ -20,10 +20,10 @@ const NotFound = () => {
           404
         </Typography>
         <Typography variant="h4" sx={{ mb: 4 }}>
-          Page Not Found
+          Không tìm thấy trang
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-          The page you're looking for doesn't exist or has been moved.
+          Trang bạn tìm kiếm không tồn tại hoặc đã được di chuyển.
         </Typography>
         <Button
           component={RouterLink}
@@ -32,7 +32,7 @@ const NotFound = () => {
           color="primary"
           size="large"
         >
-          Return to Dashboard
+          Quay lại bảng điều khiển
         </Button>
       </Container>
     </Box>

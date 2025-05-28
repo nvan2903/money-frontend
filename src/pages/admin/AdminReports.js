@@ -18,6 +18,7 @@ import {
 } from '@mui/icons-material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { fetchSystemStats, fetchAllTransactions, clearAdminError } from '../../store/slices/adminSlice';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 const AdminReports = () => {
   const dispatch = useDispatch();
@@ -154,12 +155,11 @@ const AdminReports = () => {
     csvContent += `SYSTEM OVERVIEW\n`;
     csvContent += `Metric,Value\n`;
     csvContent += `Total Users,${systemStats.total_users || 0}\n`;
-    csvContent += `Active Users,${systemStats.active_users || 0}\n`;
-    csvContent += `Total Income,$${(systemStats.total_income || 0).toFixed(2)}\n`;
-    csvContent += `Total Expenses,$${(systemStats.total_expense || 0).toFixed(2)}\n`;
-    csvContent += `Net Profit,$${((systemStats.total_income || 0) - (systemStats.total_expense || 0)).toFixed(2)}\n`;
+    csvContent += `Active Users,${systemStats.active_users || 0}\n`;    csvContent += `Total Income,${formatCurrency(systemStats.total_income || 0)}\n`;
+    csvContent += `Total Expenses,${formatCurrency(systemStats.total_expense || 0)}\n`;
+    csvContent += `Net Profit,${formatCurrency((systemStats.total_income || 0) - (systemStats.total_expense || 0))}\n`;
     csvContent += `Total Transactions,${systemStats.transaction_count || 0}\n`;
-    csvContent += `Average Transaction,$${((systemStats.total_income + systemStats.total_expense) / (systemStats.transaction_count || 1)).toFixed(2)}\n`;
+    csvContent += `Average Transaction,${formatCurrency((systemStats.total_income + systemStats.total_expense) / (systemStats.transaction_count || 1))}\n`;
     csvContent += `\n`;
     
     // Top Spenders
@@ -167,7 +167,7 @@ const AdminReports = () => {
       csvContent += `TOP SPENDERS\n`;
       csvContent += `Rank,Username,Email,Total Spending\n`;
       systemStats.high_spenders.forEach((spender, index) => {
-        csvContent += `${index + 1},${spender.user_info?.username || 'N/A'},${spender.user_info?.email || 'N/A'},$${spender.total_expense.toFixed(2)}\n`;
+        csvContent += `${index + 1},${spender.user_info?.username || 'N/A'},${spender.user_info?.email || 'N/A'},${formatCurrency(spender.total_expense)}\n`;
       });
       csvContent += `\n`;
     }
@@ -179,7 +179,7 @@ const AdminReports = () => {
       const totalCategoryExpense = chartData.categories.reduce((sum, cat) => sum + cat.value, 0);
       chartData.categories.forEach(category => {
         const percentage = totalCategoryExpense > 0 ? ((category.value / totalCategoryExpense) * 100).toFixed(2) : '0.00';
-        csvContent += `${category.name},$${category.value.toFixed(2)},${percentage}%\n`;
+        csvContent += `${category.name},${formatCurrency(category.value)},${percentage}%\n`;
       });
       csvContent += `\n`;
     }
@@ -190,7 +190,7 @@ const AdminReports = () => {
     transactions.slice(0, 50).forEach(transaction => {
       const date = new Date(transaction.date).toLocaleDateString();
       const description = (transaction.description || '').replace(/,/g, ';'); // Replace commas to avoid CSV issues
-      csvContent += `${date},${transaction.user_id},${transaction.category_name || 'N/A'},${transaction.type},$${transaction.amount.toFixed(2)},${description}\n`;
+      csvContent += `${date},${transaction.user_id},${transaction.category_name || 'N/A'},${transaction.type},${formatCurrency(transaction.amount)},${description}\n`;
     });
     
     return csvContent;
@@ -239,37 +239,37 @@ const AdminReports = () => {
             <Grid container spacing={3} alignItems="center">
               <Grid item xs={12} sm={6} md={3}>
                 <FormControl fullWidth>
-                  <InputLabel>Report Type</InputLabel>
+                  <InputLabel>Loại báo cáo</InputLabel>
                   <Select
                     value={reportType}
                     label="Report Type"
                     onChange={(e) => setReportType(e.target.value)}
                   >
-                    <MenuItem value="overview">System Overview</MenuItem>
-                    <MenuItem value="financial">Financial Summary</MenuItem>
-                    <MenuItem value="user-activity">User Activity</MenuItem>
-                    <MenuItem value="transaction-details">Transaction Details</MenuItem>
+                    <MenuItem value="overview">Tổng quan</MenuItem>
+                    <MenuItem value="detailed">Phân tích chi tiết</MenuItem>
+                    <MenuItem value="trends">Xu hướng & Mẫu hình</MenuItem>
+                    <MenuItem value="transaction-details">Chi tiết giao dịch</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
               
               <Grid item xs={12} sm={6} md={2}>
                 <FormControl fullWidth>
-                  <InputLabel>Period</InputLabel>
+                  <InputLabel>Thời gian</InputLabel>
                   <Select
                     value={period}
                     label="Period"
                     onChange={(e) => setPeriod(e.target.value)}
                   >
-                    <MenuItem value="month">Monthly</MenuItem>
-                    <MenuItem value="quarter">Quarterly</MenuItem>
-                    <MenuItem value="year">Yearly</MenuItem>
+                    <MenuItem value="month">Tháng</MenuItem>
+                    <MenuItem value="quarter">Quý</MenuItem>
+                    <MenuItem value="year">Năm</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>              <Grid item xs={12} sm={6} md={2}>
                 <TextField
                   fullWidth
-                  label="Start Date"
+                  label="Ngày bắt đầu"
                   type="date"
                   value={dateRange.start || ''}
                   onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
@@ -280,13 +280,13 @@ const AdminReports = () => {
               <Grid item xs={12} sm={6} md={2}>
                 <TextField
                   fullWidth
-                  label="End Date"
+                  label="Ngày kết thúc"
                   type="date"
                   value={dateRange.end || ''}
                   onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
                   InputLabelProps={{ shrink: true }}
                 />              </Grid>              <Grid item xs={12} md={3}>
-                <MuiTooltip title="Export reports in various formats">
+                <MuiTooltip title="Xuất báo cáo dưới nhiều định dạng">
                   <Button
                     variant="contained"
                     startIcon={<DownloadIcon />}
@@ -301,10 +301,10 @@ const AdminReports = () => {
                     {generating ? (
                       <>
                         <CircularProgress size={16} sx={{ mr: 1, color: 'white' }} />
-                        {selectedFormat ? `Exporting ${selectedFormat.toUpperCase()}...` : 'Exporting...'}
+                        {selectedFormat ? `Xuất ${selectedFormat.toUpperCase()}...` : 'Đang xuất...'}
                       </>
                     ) : (
-                      'Export Report'
+                      'Xuất báo cáo'
                     )}                  </Button>
                 </MuiTooltip>
                 
@@ -326,8 +326,8 @@ const AdminReports = () => {
                       <PdfIcon sx={{ color: '#d32f2f' }} />
                     </ListItemIcon>
                     <ListItemText 
-                      primary="PDF Report" 
-                      secondary="Complete formatted report"
+                      primary="Báo cáo PDF" 
+                      secondary="Báo cáo định dạng hoàn chỉnh"
                     />
                   </MenuItem>
                   
@@ -336,8 +336,8 @@ const AdminReports = () => {
                       <ExcelIcon sx={{ color: '#2e7d32' }} />
                     </ListItemIcon>
                     <ListItemText 
-                      primary="Excel Workbook" 
-                      secondary="Detailed data with charts"
+                      primary="Sổ làm việc Excel" 
+                      secondary="Dữ liệu chi tiết với biểu đồ"
                     />
                   </MenuItem>
                   
@@ -348,8 +348,8 @@ const AdminReports = () => {
                       <CsvIcon sx={{ color: '#ed6c02' }} />
                     </ListItemIcon>
                     <ListItemText 
-                      primary="CSV Data" 
-                      secondary="Raw data for analysis"
+                      primary="Dữ liệu CSV" 
+                      secondary="Dữ liệu thô để phân tích"
                     />
                   </MenuItem>
                 </Menu>
@@ -371,10 +371,9 @@ const AdminReports = () => {
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <IncomeIcon sx={{ color: 'success.main', mr: 1 }} />
-                      <Typography variant="h6">Revenue</Typography>
-                    </Box>
-                    <Typography variant="h4" sx={{ color: 'success.main', mt: 1 }}>
-                      ${reportStats.totalRevenue.toFixed(2)}
+                      <Typography variant="h6">Doanh thu</Typography>
+                    </Box>                    <Typography variant="h4" sx={{ color: 'success.main', mt: 1 }}>
+                      {formatCurrency(reportStats.totalRevenue)}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -385,10 +384,9 @@ const AdminReports = () => {
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <ExpenseIcon sx={{ color: 'error.main', mr: 1 }} />
-                      <Typography variant="h6">Expenses</Typography>
-                    </Box>
-                    <Typography variant="h4" sx={{ color: 'error.main', mt: 1 }}>
-                      ${reportStats.totalExpenses.toFixed(2)}
+                      <Typography variant="h6">Chi phí</Typography>
+                    </Box>                    <Typography variant="h4" sx={{ color: 'error.main', mt: 1 }}>
+                      {formatCurrency(reportStats.totalExpenses)}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -399,16 +397,15 @@ const AdminReports = () => {
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <BalanceIcon sx={{ color: 'primary.main', mr: 1 }} />
-                      <Typography variant="h6">Net Profit</Typography>
-                    </Box>
-                    <Typography 
+                      <Typography variant="h6">Lợi nhuận ròng</Typography>
+                    </Box>                    <Typography 
                       variant="h4" 
                       sx={{ 
                         color: reportStats.netProfit >= 0 ? 'success.main' : 'error.main',
                         mt: 1 
                       }}
                     >
-                      ${reportStats.netProfit.toFixed(2)}
+                      {formatCurrency(reportStats.netProfit)}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -417,7 +414,7 @@ const AdminReports = () => {
               <Grid item xs={12} sm={6} md={2}>
                 <Card>
                   <CardContent>
-                    <Typography variant="h6">Transactions</Typography>
+                    <Typography variant="h6">Giao dịch</Typography>
                     <Typography variant="h4" sx={{ color: 'info.main', mt: 1 }}>
                       {reportStats.totalTransactions}
                     </Typography>
@@ -428,7 +425,7 @@ const AdminReports = () => {
               <Grid item xs={12} sm={6} md={2}>
                 <Card>
                   <CardContent>
-                    <Typography variant="h6">Active Users</Typography>
+                    <Typography variant="h6">Người dùng hoạt động</Typography>
                     <Typography variant="h4" sx={{ color: 'primary.main', mt: 1 }}>
                       {reportStats.totalUsers}
                     </Typography>
@@ -439,9 +436,8 @@ const AdminReports = () => {
               <Grid item xs={12} sm={6} md={2}>
                 <Card>
                   <CardContent>
-                    <Typography variant="h6">Avg Transaction</Typography>
-                    <Typography variant="h4" sx={{ color: 'text.primary', mt: 1 }}>
-                      ${reportStats.avgTransactionValue.toFixed(2)}
+                    <Typography variant="h6">Giá trị giao dịch trung bình</Typography>                    <Typography variant="h4" sx={{ color: 'text.primary', mt: 1 }}>
+                      {formatCurrency(reportStats.avgTransactionValue)}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -454,16 +450,15 @@ const AdminReports = () => {
               <Grid item xs={12} lg={8}>
                 <Paper sx={{ p: 3 }}>
                   <Typography variant="h6" gutterBottom>
-                    Monthly Income vs Expenses
+                    Doanh thu và Chi phí theo tháng
                   </Typography>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={chartData.monthly}>
+                  <ResponsiveContainer width="100%" height={300}>                    <BarChart data={chartData.monthly}>
                       <CartesianGrid strokeDasharray="3 3" />                      <XAxis dataKey="month" />
                       <YAxis />
-                      <RechartsTooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                      <RechartsTooltip formatter={(value) => formatCurrency(value)} />
                       <Legend />
-                      <Bar dataKey="income" fill="#4caf50" name="Income" />
-                      <Bar dataKey="expense" fill="#f44336" name="Expenses" />
+                      <Bar dataKey="income" fill="#4caf50" name="Doanh thu" />
+                      <Bar dataKey="expense" fill="#f44336" name="Chi phí" />
                     </BarChart>
                   </ResponsiveContainer>
                 </Paper>
@@ -473,7 +468,7 @@ const AdminReports = () => {
               <Grid item xs={12} lg={4}>
                 <Paper sx={{ p: 3 }}>
                   <Typography variant="h6" gutterBottom>
-                    Expense Categories
+                    Phân bổ Chi phí theo Danh mục
                   </Typography>
                   <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
@@ -487,10 +482,9 @@ const AdminReports = () => {
                         label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
                       >
                         {chartData.categories.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />                      ))}
                       </Pie>
-                      <RechartsTooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                      <RechartsTooltip formatter={(value) => formatCurrency(value)} />
                     </PieChart>
                   </ResponsiveContainer>
                 </Paper>
@@ -500,16 +494,16 @@ const AdminReports = () => {
             {/* Top Spenders Table */}
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
-                Top Spenders
+                Người chi tiêu nhiều nhất
               </Typography>
               <TableContainer>
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell>Rank</TableCell>
-                      <TableCell>Username</TableCell>
+                      <TableCell>Hạng</TableCell>
+                      <TableCell>Tên đăng nhập</TableCell>
                       <TableCell>Email</TableCell>
-                      <TableCell align="right">Total Spending</TableCell>
+                      <TableCell align="right">Tổng chi tiêu</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -517,10 +511,9 @@ const AdminReports = () => {
                       <TableRow key={spender.user_id} hover>
                         <TableCell>{index + 1}</TableCell>
                         <TableCell>{spender.user_info?.username || 'N/A'}</TableCell>
-                        <TableCell>{spender.user_info?.email || 'N/A'}</TableCell>
-                        <TableCell align="right">
+                        <TableCell>{spender.user_info?.email || 'N/A'}</TableCell>                        <TableCell align="right">
                           <Typography variant="body2" sx={{ color: 'error.main', fontWeight: 'bold' }}>
-                            ${spender.total_expense.toFixed(2)}
+                            {formatCurrency(spender.total_expense)}
                           </Typography>
                         </TableCell>
                       </TableRow>

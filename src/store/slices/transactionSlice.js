@@ -92,11 +92,64 @@ export const fetchRecentTransactions = createAsyncThunk(
   }
 );
 
+// Search transactions with advanced filters
+export const searchTransactions = createAsyncThunk(
+  'transactions/search',
+  async (filters = {}, { rejectWithValue }) => {
+    try {
+      const response = await transactionService.searchTransactions(filters);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to search transactions');
+    }
+  }
+);
+
+// Fetch search suggestions
+export const fetchSearchSuggestions = createAsyncThunk(
+  'transactions/fetchSearchSuggestions',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await transactionService.getSearchSuggestions();
+      return response.data.suggestions;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch search suggestions');
+    }
+  }
+);
+
+// Bulk delete transactions
+export const bulkDeleteTransactions = createAsyncThunk(
+  'transactions/bulkDelete',
+  async (transactionIds, { rejectWithValue }) => {
+    try {
+      const response = await transactionService.bulkDeleteTransactions(transactionIds);
+      return { transactionIds, message: response.data.message };
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to delete transactions');
+    }
+  }
+);
+
+// Duplicate transaction
+export const duplicateTransaction = createAsyncThunk(
+  'transactions/duplicate',
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await transactionService.duplicateTransaction(id);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to duplicate transaction');
+    }
+  }
+);
+
 // Initial state
 const initialState = {
   transactions: [],
   transaction: null,
   recentTransactions: [],
+  searchSuggestions: [],
   total: 0,
   page: 1,
   pages: 1,
@@ -226,8 +279,7 @@ const transactionSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      
-      // Export transactions cases
+        // Export transactions cases
       .addCase(exportTransactions.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -237,6 +289,71 @@ const transactionSlice = createSlice({
         state.message = 'Transactions exported successfully!';
       })
       .addCase(exportTransactions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Search transactions cases
+      .addCase(searchTransactions.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(searchTransactions.fulfilled, (state, action) => {
+        state.loading = false;
+        state.transactions = action.payload.transactions;
+        state.total = action.payload.total;
+        state.page = action.payload.page;
+        state.pages = action.payload.pages;
+        state.perPage = action.payload.per_page;
+      })
+      .addCase(searchTransactions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Fetch search suggestions cases
+      .addCase(fetchSearchSuggestions.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchSearchSuggestions.fulfilled, (state, action) => {
+        state.loading = false;
+        state.searchSuggestions = action.payload;
+      })
+      .addCase(fetchSearchSuggestions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Bulk delete transactions cases
+      .addCase(bulkDeleteTransactions.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(bulkDeleteTransactions.fulfilled, (state, action) => {
+        state.loading = false;
+        state.transactions = state.transactions.filter(
+          (transaction) => !action.payload.transactionIds.includes(transaction._id)
+        );
+        state.message = action.payload.message;
+      })
+      .addCase(bulkDeleteTransactions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Duplicate transaction cases
+      .addCase(duplicateTransaction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(duplicateTransaction.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.message = 'Transaction duplicated successfully!';
+      })
+      .addCase(duplicateTransaction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

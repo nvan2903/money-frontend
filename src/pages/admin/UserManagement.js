@@ -107,7 +107,7 @@ const UserManagement = () => {  const dispatch = useDispatch();
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" gutterBottom>
-          User Management
+          Quản lý người dùng
         </Typography>
       </Box>
 
@@ -127,7 +127,7 @@ const UserManagement = () => {  const dispatch = useDispatch();
       <Paper sx={{ p: 2, mb: 3 }}>
         <TextField
           fullWidth
-          placeholder="Search users by username, email, first name, or last name..."
+          placeholder="Tìm kiếm người dùng theo tên đăng nhập, email, họ hoặc tên..."
           value={searchTerm}
           onChange={handleSearch}
           InputProps={{
@@ -146,13 +146,13 @@ const UserManagement = () => {  const dispatch = useDispatch();
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Username</TableCell>
+                <TableCell>Tên đăng nhập</TableCell>
                 <TableCell>Email</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Role</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Created Date</TableCell>
-                <TableCell align="center">Actions</TableCell>
+                <TableCell>Tên</TableCell>
+                <TableCell>Vai trò</TableCell>
+                <TableCell>Trạng thái</TableCell>
+                <TableCell>Ngày tạo</TableCell>
+                <TableCell align="center">Hành động</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -170,19 +170,19 @@ const UserManagement = () => {  const dispatch = useDispatch();
                     <TableCell>
                       {user.first_name || user.last_name 
                         ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
-                        : 'N/A'
+                        : 'Không có dữ liệu'
                       }
                     </TableCell>
                     <TableCell>
                       <Chip 
-                        label={user.role || 'user'} 
+                        label={user.role === 'admin' ? 'Quản trị viên' : 'Người dùng'}
                         color={user.role === 'admin' ? 'primary' : 'default'}
                         size="small"
                       />
                     </TableCell>
                     <TableCell>
                       <Chip 
-                        label={user.is_active ? 'Active' : 'Inactive'} 
+                        label={user.is_active ? 'Đang hoạt động' : 'Ngưng hoạt động'}
                         color={user.is_active ? 'success' : 'error'}
                         size="small"
                       />
@@ -193,7 +193,7 @@ const UserManagement = () => {  const dispatch = useDispatch();
                         onClick={() => handleViewUser(user._id)}
                         color="primary"
                         size="small"
-                        title="View Details"
+                        title="Xem chi tiết"
                       >
                         <ViewIcon />
                       </IconButton>
@@ -204,7 +204,7 @@ const UserManagement = () => {  const dispatch = useDispatch();
                             onClick={() => handleToggleStatus(user._id)}
                             color={user.is_active ? 'warning' : 'success'}
                             size="small"
-                            title={user.is_active ? 'Deactivate User' : 'Activate User'}
+                            title={user.is_active ? 'Ngưng hoạt động người dùng' : 'Kích hoạt người dùng'}
                           >
                             {user.is_active ? <DeactivateIcon /> : <ActivateIcon />}
                           </IconButton>
@@ -213,7 +213,7 @@ const UserManagement = () => {  const dispatch = useDispatch();
                             onClick={() => handleDeleteUser(user)}
                             color="error"
                             size="small"
-                            title="Delete User"
+                            title="Xóa người dùng"
                           >
                             <DeleteIcon />
                           </IconButton>
@@ -226,7 +226,7 @@ const UserManagement = () => {  const dispatch = useDispatch();
                 <TableRow>
                   <TableCell colSpan={7} align="center">
                     <Typography variant="body1" color="text.secondary">
-                      No users found
+                      Không tìm thấy người dùng nào
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -254,21 +254,21 @@ const UserManagement = () => {  const dispatch = useDispatch();
         aria-labelledby="delete-dialog-title"
       >
         <DialogTitle id="delete-dialog-title" color="error">
-          Delete User
+          Xóa người dùng
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete user "{selectedUser?.username}"? 
-            This action will permanently delete all user data including transactions and categories.
-            This action cannot be undone.
+            Bạn có chắc chắn muốn xóa người dùng "{selectedUser?.username}"? 
+            Hành động này sẽ xóa vĩnh viễn tất cả dữ liệu của người dùng bao gồm giao dịch và danh mục.
+            Hành động này không thể hoàn tác.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={cancelDelete} color="primary">
-            Cancel
+            Hủy
           </Button>
           <Button onClick={confirmDelete} color="error" variant="contained">
-            Delete
+            Xóa
           </Button>
         </DialogActions>
       </Dialog>

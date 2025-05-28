@@ -51,13 +51,13 @@ const MainLayout = () => {
   };
 
   const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Transactions', icon: <TransactionIcon />, path: '/transactions' },
-    { text: 'Categories', icon: <CategoryIcon />, path: '/categories' }
+    { text: 'Bảng điều khiển', icon: <DashboardIcon />, path: '/dashboard' },
+    { text: 'Giao dịch', icon: <TransactionIcon />, path: '/transactions' },
+    { text: 'Danh mục', icon: <CategoryIcon />, path: '/categories' }
   ];
 
   if (isAdmin) {
-    menuItems.push({ text: 'Admin', icon: <AdminIcon />, path: '/admin' });
+    menuItems.push({ text: 'Quản trị', icon: <AdminIcon />, path: '/admin' });
   }
 
   const drawer = (
@@ -71,7 +71,7 @@ const MainLayout = () => {
         }}
       >
         <Typography variant="h6" noWrap component="div">
-          Money Manager
+          Quản lý tài chính
         </Typography>
       </Toolbar>
       <Divider />
@@ -114,10 +114,10 @@ const MainLayout = () => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Money Management App
+            Ứng dụng quản lý tài chính
           </Typography>
           <div>
-            <Tooltip title="Account settings">
+            <Tooltip title="Cài đặt tài khoản">
               <IconButton
                 size="large"
                 aria-label="account of current user"
@@ -150,13 +150,13 @@ const MainLayout = () => {
                 <ListItemIcon>
                   <AccountIcon fontSize="small" />
                 </ListItemIcon>
-                <Typography variant="inherit">Profile</Typography>
+                <Typography variant="inherit">Hồ sơ</Typography>
               </MenuItem>
               <MenuItem onClick={handleLogout}>
                 <ListItemIcon>
                   <LogoutIcon fontSize="small" />
                 </ListItemIcon>
-                <Typography variant="inherit">Logout</Typography>
+                <Typography variant="inherit">Đăng xuất</Typography>
               </MenuItem>
             </Menu>
           </div>

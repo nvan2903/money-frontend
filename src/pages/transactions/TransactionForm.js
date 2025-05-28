@@ -142,15 +142,15 @@ const TransactionForm = () => {
                 fullWidth
                 id="type"
                 name="type"
-                label="Transaction Type"
+                label="Loại giao dịch"
                 select
                 value={formik.values.type}
                 onChange={handleTypeChange}
                 error={formik.touched.type && Boolean(formik.errors.type)}
                 helperText={formik.touched.type && formik.errors.type}
               >
-                <MenuItem value="income">Income</MenuItem>
-                <MenuItem value="expense">Expense</MenuItem>
+                <MenuItem value="income">Thu nhập</MenuItem>
+                <MenuItem value="expense">Chi tiêu</MenuItem>
               </TextField>
             </Grid>
             
@@ -159,14 +159,13 @@ const TransactionForm = () => {
                 fullWidth
                 id="amount"
                 name="amount"
-                label="Amount"
+                label="Số tiền"
                 type="number"
                 value={formik.values.amount}
                 onChange={formik.handleChange}
                 error={formik.touched.amount && Boolean(formik.errors.amount)}
-                helperText={formik.touched.amount && formik.errors.amount}
-                InputProps={{
-                  startAdornment: <Box component="span" sx={{ mr: 1 }}>$</Box>
+                helperText={formik.touched.amount && formik.errors.amount}                InputProps={{
+                  startAdornment: <Box component="span" sx={{ mr: 1 }}>₫</Box>
                 }}
               />
             </Grid>
@@ -179,7 +178,7 @@ const TransactionForm = () => {
                 <TextField
                   id="category_id"
                   name="category_id"
-                  label="Category"
+                  label="Danh mục"
                   select
                   value={formik.values.category_id}
                   onChange={formik.handleChange}
@@ -193,7 +192,7 @@ const TransactionForm = () => {
                     ))
                   ) : (
                     <MenuItem disabled>
-                      {`No ${selectedType} categories found. Please create one first.`}
+                      {`Không tìm thấy danh mục ${selectedType}. Vui lòng tạo mới trước.`}
                     </MenuItem>
                   )}
                 </TextField>
@@ -208,7 +207,7 @@ const TransactionForm = () => {
                 fullWidth
                 id="date"
                 name="date"
-                label="Date"
+                label="Ngày"
                 type="date"
                 value={formik.values.date}
                 onChange={formik.handleChange}
@@ -225,7 +224,7 @@ const TransactionForm = () => {
                 fullWidth
                 id="note"
                 name="note"
-                label="Note (optional)"
+                label="Ghi chú (không bắt buộc)"
                 value={formik.values.note}
                 onChange={formik.handleChange}
                 error={formik.touched.note && Boolean(formik.errors.note)}
@@ -241,7 +240,7 @@ const TransactionForm = () => {
                 color="secondary"
                 onClick={() => navigate('/transactions')}
               >
-                Cancel
+                Hủy
               </Button>
               <Button
                 type="submit"
@@ -252,9 +251,9 @@ const TransactionForm = () => {
                 {loading ? (
                   <CircularProgress size={24} />
                 ) : isEditing ? (
-                  'Update Transaction'
+                  'Cập nhật giao dịch'
                 ) : (
-                  'Add Transaction'
+                  'Thêm giao dịch'
                 )}
               </Button>
             </Grid>

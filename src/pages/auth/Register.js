@@ -120,7 +120,7 @@ const Register = () => {
           <LockOutlined />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Sign Up
+          Đăng ký tài khoản
         </Typography>
 
         {loading && <Loader />}
@@ -133,7 +133,7 @@ const Register = () => {
                 name="first_name"
                 fullWidth
                 id="first_name"
-                label="First Name"
+                label="Tên"
                 value={formik.values.first_name}
                 onChange={formik.handleChange}
                 error={formik.touched.first_name && Boolean(formik.errors.first_name)}
@@ -144,7 +144,7 @@ const Register = () => {
               <TextField
                 fullWidth
                 id="last_name"
-                label="Last Name"
+                label="Họ"
                 name="last_name"
                 autoComplete="family-name"
                 value={formik.values.last_name}
@@ -158,7 +158,7 @@ const Register = () => {
                 required
                 fullWidth
                 id="username"
-                label="Username"
+                label="Tên đăng nhập"
                 name="username"
                 autoComplete="username"
                 value={formik.values.username}
@@ -172,7 +172,7 @@ const Register = () => {
                 required
                 fullWidth
                 id="email"
-                label="Email Address"
+                label="Địa chỉ Email"
                 name="email"
                 autoComplete="email"
                 value={formik.values.email}
@@ -186,7 +186,7 @@ const Register = () => {
                 required
                 fullWidth
                 name="password"
-                label="Password"
+                label="Mật khẩu"
                 type={showPassword ? 'text' : 'password'}
                 id="password"
                 autoComplete="new-password"
@@ -213,7 +213,7 @@ const Register = () => {
                 required
                 fullWidth
                 name="confirmPassword"
-                label="Confirm Password"
+                label="Xác nhận mật khẩu"
                 type={showPassword ? 'text' : 'password'}
                 id="confirmPassword"
                 autoComplete="new-password"
@@ -231,12 +231,12 @@ const Register = () => {
             sx={{ mt: 3, mb: 2 }}
             disabled={loading}
           >
-            Sign Up
+            Đăng ký
           </Button>
           <Grid container justifyContent="flex-end">
             <Grid item>
               <Link component={RouterLink} to="/login" variant="body2">
-                Already have an account? Sign in
+                Đã có tài khoản? Đăng nhập
               </Link>
             </Grid>
           </Grid>

@@ -27,10 +27,14 @@ const adminService = {  // Get all users with pagination and search
   getAllTransactions: (filters = {}) => {
     return apiClient.get('/admin/transactions/', { params: filters });
   },
-  
-  // Get system statistics
+    // Get system statistics
   getSystemStats: () => {
     return apiClient.get('/admin/stats/');
+  },
+
+  // Get user statistics (admin access to any user)
+  getUserStatistics: (userId, filters = {}) => {
+    return apiClient.get(`/admin/users/${userId}/statistics`, { params: filters });
   }
 };
 

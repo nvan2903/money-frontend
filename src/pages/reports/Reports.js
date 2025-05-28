@@ -19,6 +19,7 @@ import {
 } from 'recharts';
 import { fetchTransactions } from '../../store/slices/transactionSlice';
 import { fetchCategories } from '../../store/slices/categorySlice';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 const Reports = () => {
   const theme = useTheme();
@@ -250,7 +251,7 @@ const Reports = () => {
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Typography variant="h4" gutterBottom>
-        Financial Reports & Analytics
+        Báo cáo & Phân tích tài chính
       </Typography>
 
       {/* Controls */}
@@ -258,31 +259,31 @@ const Reports = () => {
         <Grid container spacing={3} alignItems="center">
           <Grid item xs={12} md={3}>
             <FormControl fullWidth>
-              <InputLabel>Time Range</InputLabel>
+              <InputLabel>Khoảng thời gian</InputLabel>
               <Select
                 value={timeRange}
-                label="Time Range"
+                label="Khoảng thời gian"
                 onChange={(e) => setTimeRange(e.target.value)}
               >
-                <MenuItem value="last30days">Last 30 Days</MenuItem>
-                <MenuItem value="last3months">Last 3 Months</MenuItem>
-                <MenuItem value="last6months">Last 6 Months</MenuItem>
-                <MenuItem value="lastyear">Last Year</MenuItem>
+                <MenuItem value="last30days">30 ngày gần nhất</MenuItem>
+                <MenuItem value="last3months">3 tháng gần nhất</MenuItem>
+                <MenuItem value="last6months">6 tháng gần nhất</MenuItem>
+                <MenuItem value="lastyear">Năm vừa qua</MenuItem>
               </Select>
             </FormControl>
           </Grid>
           
           <Grid item xs={12} md={3}>
             <FormControl fullWidth>
-              <InputLabel>Report Type</InputLabel>
+              <InputLabel>Loại báo cáo</InputLabel>
               <Select
                 value={reportType}
-                label="Report Type"
+                label="Loại báo cáo"
                 onChange={(e) => setReportType(e.target.value)}
               >
-                <MenuItem value="overview">Overview</MenuItem>
-                <MenuItem value="detailed">Detailed Analysis</MenuItem>
-                <MenuItem value="trends">Trends & Patterns</MenuItem>
+                <MenuItem value="overview">Tổng quan</MenuItem>
+                <MenuItem value="detailed">Phân tích chi tiết</MenuItem>
+                <MenuItem value="trends">Xu hướng & Mẫu hình</MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -294,21 +295,21 @@ const Reports = () => {
                 startIcon={<PdfIcon />}
                 onClick={() => handleExportReport('pdf')}
               >
-                Export PDF
+                Xuất PDF
               </Button>
               <Button
                 variant="outlined"
                 startIcon={<ExcelIcon />}
                 onClick={() => handleExportReport('excel')}
               >
-                Export Excel
+                Xuất Excel
               </Button>
               <Button
                 variant="outlined"
                 startIcon={<CsvIcon />}
                 onClick={() => handleExportReport('csv')}
               >
-                Export CSV
+                Xuất CSV
               </Button>
             </Stack>
           </Grid>
@@ -322,10 +323,10 @@ const Reports = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <IncomeIcon sx={{ color: 'success.main', mr: 1 }} />
-                <Typography variant="h6">Total Income</Typography>
+                <Typography variant="h6">Tổng thu nhập</Typography>
               </Box>
               <Typography variant="h4" color="success.main">
-                ${chartData.incomeVsExpense[0]?.value?.toFixed(2) || '0.00'}
+                {formatCurrency(chartData.incomeVsExpense[0]?.value || 0)}
               </Typography>
             </CardContent>
           </Card>
@@ -336,10 +337,10 @@ const Reports = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <ExpenseIcon sx={{ color: 'error.main', mr: 1 }} />
-                <Typography variant="h6">Total Expense</Typography>
+                <Typography variant="h6">Tổng chi phí</Typography>
               </Box>
               <Typography variant="h4" color="error.main">
-                ${chartData.incomeVsExpense[1]?.value?.toFixed(2) || '0.00'}
+                {formatCurrency(chartData.incomeVsExpense[1]?.value || 0)}
               </Typography>
             </CardContent>
           </Card>
@@ -350,10 +351,10 @@ const Reports = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <BalanceIcon sx={{ color: 'primary.main', mr: 1 }} />
-                <Typography variant="h6">Net Balance</Typography>
+                <Typography variant="h6">Số dư ròng</Typography>
               </Box>
               <Typography variant="h4" color="primary.main">
-                ${((chartData.incomeVsExpense[0]?.value || 0) - (chartData.incomeVsExpense[1]?.value || 0)).toFixed(2)}
+                {formatCurrency((chartData.incomeVsExpense[0]?.value || 0) - (chartData.incomeVsExpense[1]?.value || 0))}
               </Typography>
             </CardContent>
           </Card>
@@ -366,17 +367,17 @@ const Reports = () => {
         <Grid item xs={12} lg={8}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
-              Monthly Income vs Expense
+              So sánh Thu nhập và Chi phí theo tháng
             </Typography>
             <ResponsiveContainer width="100%" height={400}>
               <BarChart data={chartData.monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                <Tooltip formatter={(value) => formatCurrency(value)} />
                 <Legend />
-                <Bar dataKey="income" fill={theme.palette.success.main} name="Income" />
-                <Bar dataKey="expense" fill={theme.palette.error.main} name="Expense" />
+                <Bar dataKey="income" fill={theme.palette.success.main} name="Thu nhập" />
+                <Bar dataKey="expense" fill={theme.palette.error.main} name="Chi phí" />
               </BarChart>
             </ResponsiveContainer>
           </Paper>
@@ -386,7 +387,7 @@ const Reports = () => {
         <Grid item xs={12} lg={4}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
-              Income vs Expense Ratio
+              Tỷ lệ Thu nhập và Chi phí
             </Typography>
             <ResponsiveContainer width="100%" height={400}>
               <PieChart>
@@ -403,7 +404,7 @@ const Reports = () => {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                <Tooltip formatter={(value) => formatCurrency(value)} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -414,7 +415,7 @@ const Reports = () => {
         <Grid item xs={12} lg={6}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
-              Expense by Category
+              Chi phí theo Danh mục
             </Typography>
             <ResponsiveContainer width="100%" height={400}>
               <PieChart>
@@ -431,7 +432,7 @@ const Reports = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                <Tooltip formatter={(value) => formatCurrency(value)} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -442,7 +443,7 @@ const Reports = () => {
         <Grid item xs={12} lg={6}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
-              Daily Financial Trend
+              Xu hướng Tài chính hàng ngày
             </Typography>
             <ResponsiveContainer width="100%" height={400}>
               <LineChart data={chartData.dailyTrend}>
@@ -454,12 +455,12 @@ const Reports = () => {
                 <YAxis />
                 <Tooltip 
                   labelFormatter={(date) => new Date(date).toLocaleDateString()}
-                  formatter={(value) => `$${value.toFixed(2)}`}
+                  formatter={(value) => formatCurrency(value)}
                 />
                 <Legend />
-                <Line type="monotone" dataKey="net" stroke={theme.palette.primary.main} name="Net Balance" />
-                <Line type="monotone" dataKey="income" stroke={theme.palette.success.main} name="Income" />
-                <Line type="monotone" dataKey="expense" stroke={theme.palette.error.main} name="Expense" />
+                <Line type="monotone" dataKey="net" stroke={theme.palette.primary.main} name="Số dư ròng" />
+                <Line type="monotone" dataKey="income" stroke={theme.palette.success.main} name="Thu nhập" />
+                <Line type="monotone" dataKey="expense" stroke={theme.palette.error.main} name="Chi phí" />
               </LineChart>
             </ResponsiveContainer>
           </Paper>

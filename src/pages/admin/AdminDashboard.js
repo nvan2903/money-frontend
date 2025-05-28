@@ -4,7 +4,7 @@ import {
   Box, Typography, Grid, Card, CardContent, Paper,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Chip, CircularProgress, useTheme, IconButton, Tooltip,
-  LinearProgress, Divider, Avatar, Stack
+  LinearProgress, Avatar, Stack
 } from '@mui/material';
 import {
   People as UsersIcon,
@@ -17,8 +17,9 @@ import {
   Category as CategoryIcon,
   StarRate as StarIcon
 } from '@mui/icons-material';
-import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { fetchSystemStats } from '../../store/slices/adminSlice';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 const AdminDashboard = () => {
   const theme = useTheme();
@@ -76,13 +77,13 @@ const AdminDashboard = () => {
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" gutterBottom>
-          Admin Dashboard
+          Bảng điều khiển quản trị
         </Typography>
         <Stack direction="row" spacing={2} alignItems="center">
           <Typography variant="body2" color="text.secondary">
-            Last updated: {lastRefresh.toLocaleTimeString()}
+            Cập nhật lần cuối: {lastRefresh.toLocaleTimeString()}
           </Typography>
-          <Tooltip title="Refresh data">
+          <Tooltip title="Làm mới dữ liệu">
             <IconButton onClick={handleRefresh} disabled={loading}>
               <RefreshIcon />
             </IconButton>
@@ -97,13 +98,13 @@ const AdminDashboard = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box>
                   <Typography variant="h6" component="div">
-                    Total Users
+                    Tổng số người dùng
                   </Typography>
                   <Typography variant="h4" component="div" sx={{ mt: 1 }}>
                     {stats.user_count || 0}
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                    Active: {stats.active_users || 0}
+                    Đang hoạt động: {stats.active_users || 0}
                   </Typography>
                 </Box>
                 <UsersIcon sx={{ fontSize: 40, opacity: 0.8 }} />
@@ -118,13 +119,13 @@ const AdminDashboard = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box>
                   <Typography variant="h6" component="div">
-                    Transactions
+                    Giao dịch
                   </Typography>
                   <Typography variant="h4" component="div" sx={{ mt: 1 }}>
                     {stats.transaction_count || 0}
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                    This month
+                    Tháng này
                   </Typography>
                 </Box>
                 <TransactionsIcon sx={{ fontSize: 40, opacity: 0.8 }} />
@@ -139,10 +140,10 @@ const AdminDashboard = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box>
                   <Typography variant="h6" component="div">
-                    Total Income
+                    Tổng thu nhập
                   </Typography>
                   <Typography variant="h4" component="div" sx={{ mt: 1 }}>
-                    ${(stats.total_income || 0).toFixed(2)}
+                    {formatCurrency(stats.total_income || 0)}
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.8 }}>
                     +{((stats.total_income || 0) / (stats.transaction_count || 1) * 100).toFixed(1)}% avg
@@ -159,13 +160,13 @@ const AdminDashboard = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box>
                   <Typography variant="h6" component="div">
-                    Total Expense
+                    Tổng chi tiêu
                   </Typography>
                   <Typography variant="h4" component="div" sx={{ mt: 1 }}>
-                    ${(stats.total_expense || 0).toFixed(2)}
+                    {formatCurrency(stats.total_expense || 0)}
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                    Avg: ${((stats.total_expense || 0) / (stats.transaction_count || 1)).toFixed(2)}
+                    Avg: {formatCurrency((stats.total_expense || 0) / (stats.transaction_count || 1))}
                   </Typography>
                 </Box>
                 <ExpenseIcon sx={{ fontSize: 40, opacity: 0.8 }} />
@@ -180,7 +181,7 @@ const AdminDashboard = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box>
                   <Typography variant="h6" component="div">
-                    Net Balance
+                    Số dư ròng
                   </Typography>
                   <Typography 
                     variant="h4" 
@@ -190,10 +191,10 @@ const AdminDashboard = () => {
                       color: ((stats.total_income || 0) - (stats.total_expense || 0)) >= 0 ? 'success.main' : 'error.main'
                     }}
                   >
-                    ${((stats.total_income || 0) - (stats.total_expense || 0)).toFixed(2)}
+                    {formatCurrency((stats.total_income || 0) - (stats.total_expense || 0))}
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                    {((stats.total_income || 0) - (stats.total_expense || 0)) >= 0 ? 'Profit' : 'Loss'}
+                    {((stats.total_income || 0) - (stats.total_expense || 0)) >= 0 ? 'Lợi nhuận' : 'Thua lỗ'}
                   </Typography>
                 </Box>
                 <BalanceIcon sx={{ fontSize: 40, opacity: 0.8 }} />
@@ -208,7 +209,7 @@ const AdminDashboard = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <AnalyticsIcon sx={{ mr: 2, fontSize: 32 }} />
               <Typography variant="h5">
-                Advanced Analytics
+                Phân tích nâng cao
               </Typography>
             </Box>
             <Grid container spacing={3}>
@@ -217,15 +218,15 @@ const AdminDashboard = () => {
                   <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
                     {((stats.total_income || 0) / ((stats.total_income || 0) + (stats.total_expense || 0)) * 100).toFixed(1)}%
                   </Typography>
-                  <Typography variant="body2">Income Ratio</Typography>
+                  <Typography variant="body2">Tỉ lệ thu nhập</Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
                 <Box sx={{ textAlign: 'center' }}>
                   <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
-                    ${((stats.total_income || 0) + (stats.total_expense || 0) / (stats.transaction_count || 1)).toFixed(2)}
+                    {formatCurrency((stats.total_income || 0) + (stats.total_expense || 0) / (stats.transaction_count || 1))}
                   </Typography>
-                  <Typography variant="body2">Avg Transaction</Typography>
+                  <Typography variant="body2">Giao dịch trung bình</Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
@@ -233,7 +234,7 @@ const AdminDashboard = () => {
                   <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
                     {stats.active_categories || 0}
                   </Typography>
-                  <Typography variant="body2">Active Categories</Typography>
+                  <Typography variant="body2">Danh mục đang hoạt động</Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
@@ -241,7 +242,7 @@ const AdminDashboard = () => {
                   <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
                     {((stats.active_users || 0) / (stats.user_count || 1) * 100).toFixed(1)}%
                   </Typography>
-                  <Typography variant="body2">User Activity</Typography>
+                  <Typography variant="body2">Hoạt động người dùng</Typography>
                 </Box>
               </Grid>
             </Grid>
@@ -294,10 +295,9 @@ const AdminDashboard = () => {
                           <Typography variant="body2" color="text.secondary">
                             {spender.user_info?.email || 'N/A'}
                           </Typography>
-                        </TableCell>
-                        <TableCell align="right">
+                        </TableCell>                        <TableCell align="right">
                           <Chip 
-                            label={`$${(spender.total_expense || 0).toFixed(2)}`}
+                            label={formatCurrency(spender.total_expense || 0)}
                             color={index < 3 ? "error" : "default"}
                             variant={index < 3 ? "filled" : "outlined"}
                             size="small"
@@ -319,7 +319,7 @@ const AdminDashboard = () => {
             ) : (
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
                 <Typography variant="body1" color="text.secondary">
-                  No spending data available
+                  Không có dữ liệu chi tiêu
                 </Typography>
               </Box>
             )}
@@ -330,7 +330,7 @@ const AdminDashboard = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
               <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
                 <CategoryIcon sx={{ mr: 1, color: 'primary.main' }} />
-                Category Distribution
+                Phân phối danh mục
               </Typography>
               <Chip label={`${categoryData.length} categories`} size="small" color="primary" />
             </Box>
@@ -349,10 +349,9 @@ const AdminDashboard = () => {
                   {categoryData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
-                </Pie>
-                <RechartsTooltip 
+                </Pie>                <RechartsTooltip 
                   formatter={(value, name) => [
-                    `$${value.toFixed(2)}`,
+                    formatCurrency(value),
                     name
                   ]}
                   labelFormatter={(label) => `Category: ${label}`}
@@ -367,17 +366,16 @@ const AdminDashboard = () => {
         <Grid item xs={12}>
           <Paper sx={{ p: 3, height: 400 }}>
             <Typography variant="h6" gutterBottom>
-              Monthly Trends Analysis
+              Phân tích xu hướng hàng tháng
             </Typography>
             {monthlyTrends.length > 0 ? (
               <ResponsiveContainer width="100%" height="90%">
                 <BarChart data={monthlyTrends}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
-                  <YAxis />
-                  <RechartsTooltip 
+                  <YAxis />                  <RechartsTooltip 
                     formatter={(value, name) => [
-                      `$${value.toFixed(2)}`,
+                      formatCurrency(value),
                       name === 'income' ? 'Income' : name === 'expense' ? 'Expense' : 'Transactions'
                     ]}
                   />
@@ -399,7 +397,7 @@ const AdminDashboard = () => {
             ) : (
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
                 <Typography variant="body1" color="text.secondary">
-                  No monthly trend data available
+                  Không có dữ liệu xu hướng hàng tháng
                 </Typography>
               </Box>
             )}

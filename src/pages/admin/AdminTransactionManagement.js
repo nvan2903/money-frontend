@@ -9,7 +9,6 @@ import {
 } from '@mui/material';
 import {
   Search as SearchIcon,
-  FilterList as FilterIcon,
   Download as DownloadIcon,
   Visibility as ViewIcon,
   Clear as ClearIcon,
@@ -18,6 +17,7 @@ import {
   TuneRounded as TuneIcon
 } from '@mui/icons-material';
 import { fetchAllTransactions, clearAdminError } from '../../store/slices/adminSlice';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 const AdminTransactionManagement = () => {  const dispatch = useDispatch();
   const { transactions = [], total, page, perPage, loading, error } = useSelector(state => state.admin);
@@ -47,23 +47,12 @@ const AdminTransactionManagement = () => {  const dispatch = useDispatch();
     return Object.values(filters).filter(value => value !== '' && value !== null).length +
            Object.values(quickFilters).filter(Boolean).length;
   }, [filters, quickFilters]);
-  // Load transactions on component mount and generate search suggestions
+  // Load transactions on component mount
   useEffect(() => {
     dispatch(fetchAllTransactions({ page: 1, per_page: 10 }));
-    
-    // Generate search suggestions from existing transactions
-    if (transactions && transactions.length > 0) {
-      const suggestions = new Set();
-      transactions.forEach(transaction => {
-        if (transaction.description) suggestions.add(transaction.description);
-        if (transaction.category_name) suggestions.add(transaction.category_name);
-        if (transaction.user_id) suggestions.add(`User: ${transaction.user_id}`);
-      });
-      setSearchSuggestions(Array.from(suggestions).slice(0, 20));
-    }
   }, [dispatch]);
 
-  // Update search suggestions when transactions change
+  // Generate search suggestions from existing transactions
   useEffect(() => {
     if (transactions && transactions.length > 0) {
       const suggestions = new Set();
@@ -101,9 +90,8 @@ const AdminTransactionManagement = () => {  const dispatch = useDispatch();
       newFilters.start_date = monthAgo;
       newFilters.end_date = today;
     }
-    
-    if (newQuickFilters.highValue) {
-      newFilters.min_amount = '1000';
+      if (newQuickFilters.highValue) {
+      newFilters.min_amount = '1000000'; // 1 million VND
     }
     
     setFilters(newFilters);
@@ -198,22 +186,18 @@ const AdminTransactionManagement = () => {  const dispatch = useDispatch();
     return new Date(dateString).toLocaleDateString();
   };
 
-  // Format amount
-  const formatAmount = (amount) => {
-    return `$${amount.toFixed(2)}`;
-  };
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4" gutterBottom>
-            Transaction Management
+            Quản lý giao dịch
           </Typography>
           <Button
             variant="outlined"
             startIcon={<DownloadIcon />}
             // onClick={handleExport}
           >
-            Export Transactions
+            Xuất giao dịch
           </Button>
         </Box>
 
@@ -228,32 +212,31 @@ const AdminTransactionManagement = () => {  const dispatch = useDispatch();
             {/* Quick Filters */}
             <Box sx={{ mb: 2 }}>
               <Typography variant="subtitle2" gutterBottom>
-                Quick Filters
+                Bộ lọc nhanh
               </Typography>
               <Stack direction="row" spacing={1} flexWrap="wrap">
                 <Chip
-                  label="Today"
+                  label="Hôm nay"
                   variant={quickFilters.today ? "filled" : "outlined"}
                   color={quickFilters.today ? "primary" : "default"}
                   onClick={() => handleQuickFilter('today')}
                   size="small"
                 />
                 <Chip
-                  label="This Week"
+                  label="Tuần này"
                   variant={quickFilters.thisWeek ? "filled" : "outlined"}
                   color={quickFilters.thisWeek ? "primary" : "default"}
                   onClick={() => handleQuickFilter('thisWeek')}
                   size="small"
                 />
                 <Chip
-                  label="This Month"
+                  label="Tháng này"
                   variant={quickFilters.thisMonth ? "filled" : "outlined"}
                   color={quickFilters.thisMonth ? "primary" : "default"}
                   onClick={() => handleQuickFilter('thisMonth')}
                   size="small"
-                />
-                <Chip
-                  label="High Value (>$1000)"
+                />                <Chip
+                  label="Giao dịch giá trị lớn (>1.000.000 đ)"
                   variant={quickFilters.highValue ? "filled" : "outlined"}
                   color={quickFilters.highValue ? "secondary" : "default"}
                   onClick={() => handleQuickFilter('highValue')}
@@ -274,7 +257,7 @@ const AdminTransactionManagement = () => {  const dispatch = useDispatch();
                     <TextField
                       {...params}
                       fullWidth
-                      placeholder="Search by description, category, user..."
+                      placeholder="Tìm kiếm theo mô tả, danh mục, người dùng..."
                       InputProps={{
                         ...params.InputProps,
                         startAdornment: (
@@ -289,20 +272,20 @@ const AdminTransactionManagement = () => {  const dispatch = useDispatch();
               </Grid>
               <Grid item xs={12} sm={6} md={2}>
                 <FormControl fullWidth>
-                  <InputLabel>Type</InputLabel>
+                  <InputLabel>Loại</InputLabel>
                   <Select
                     value={filters.type}
                     label="Type"
                     onChange={(e) => handleFilterChange('type', e.target.value)}
                   >
-                    <MenuItem value="">All</MenuItem>
-                    <MenuItem value="income">Income</MenuItem>
-                    <MenuItem value="expense">Expense</MenuItem>
+                    <MenuItem value="">Tất cả</MenuItem>
+                    <MenuItem value="income">Thu nhập</MenuItem>
+                    <MenuItem value="expense">Chi tiêu</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
               <Grid item xs={12} sm={6} md={2}>
-                <Tooltip title={`${activeFilterCount} active filters`}>
+                <Tooltip title={`${activeFilterCount} bộ lọc đang áp dụng`}>
                   <Badge badgeContent={activeFilterCount} color="primary">
                     <Button
                       variant="outlined"
@@ -310,7 +293,7 @@ const AdminTransactionManagement = () => {  const dispatch = useDispatch();
                       onClick={() => setShowFilters(!showFilters)}
                       fullWidth
                     >
-                      {showFilters ? 'Hide Filters' : 'More Filters'}
+                      {showFilters ? 'Ẩn bộ lọc' : 'Thêm bộ lọc'}
                     </Button>
                   </Badge>
                 </Tooltip>
@@ -322,7 +305,7 @@ const AdminTransactionManagement = () => {  const dispatch = useDispatch();
                   fullWidth
                   startIcon={<TuneIcon />}
                 >
-                  Apply Filters
+                  Áp dụng bộ lọc
                 </Button>
               </Grid>
               <Grid item xs={12} sm={6} md={2}>
@@ -333,20 +316,20 @@ const AdminTransactionManagement = () => {  const dispatch = useDispatch();
                   fullWidth
                   disabled={activeFilterCount === 0}
                 >
-                  Clear ({activeFilterCount})
+                  Hủy
                 </Button>
               </Grid>
             </Grid>            {/* Extended Filters */}
             <Collapse in={showFilters}>
               <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
                 <Typography variant="subtitle2" gutterBottom>
-                  Advanced Filters
+                  Bộ lọc nâng cao
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6} md={3}>
                     <TextField
                       fullWidth
-                      label="Start Date"
+                      label="Ngày bắt đầu"
                       type="date"
                       value={filters.start_date || ''}
                       onChange={(e) => handleFilterChange('start_date', e.target.value)}
@@ -356,7 +339,7 @@ const AdminTransactionManagement = () => {  const dispatch = useDispatch();
                 <Grid item xs={12} sm={6} md={3}>
                   <TextField
                     fullWidth
-                    label="End Date"
+                    label="Ngày kết thúc"
                     type="date"
                     value={filters.end_date || ''}
                     onChange={(e) => handleFilterChange('end_date', e.target.value)}
@@ -366,7 +349,7 @@ const AdminTransactionManagement = () => {  const dispatch = useDispatch();
                 <Grid item xs={12} sm={6} md={3}>
                   <TextField
                     fullWidth
-                    label="Min Amount"
+                    label="Số tiền tối thiểu"
                     type="number"
                     value={filters.min_amount}
                     onChange={(e) => handleFilterChange('min_amount', e.target.value)}
@@ -375,7 +358,7 @@ const AdminTransactionManagement = () => {  const dispatch = useDispatch();
                 <Grid item xs={12} sm={6} md={3}>
                   <TextField
                     fullWidth
-                    label="Max Amount"
+                    label="Số tiền tối đa"
                     type="number"
                     value={filters.max_amount}
                     onChange={(e) => handleFilterChange('max_amount', e.target.value)}
@@ -392,14 +375,14 @@ const AdminTransactionManagement = () => {  const dispatch = useDispatch();
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Date</TableCell>
-                  <TableCell>User</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Category</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell align="right">Amount</TableCell>
-                  <TableCell>Notes</TableCell>
-                  <TableCell align="center">Actions</TableCell>
+                  <TableCell>Ngày</TableCell>
+                  <TableCell>Người dùng</TableCell>
+                  <TableCell>Mô tả</TableCell>
+                  <TableCell>Danh mục</TableCell>
+                  <TableCell>Loại</TableCell>
+                  <TableCell align="right">Số tiền</TableCell>
+                  <TableCell>Ghi chú</TableCell>
+                  <TableCell align="center">Hành động</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -440,7 +423,7 @@ const AdminTransactionManagement = () => {  const dispatch = useDispatch();
                             fontWeight: 'bold'
                           }}
                         >
-                          {formatAmount(transaction.amount)}
+                          {formatCurrency(transaction.amount)}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -452,7 +435,7 @@ const AdminTransactionManagement = () => {  const dispatch = useDispatch();
                         <IconButton 
                           size="small"
                           color="primary"
-                          title="View Details"
+                          title="Xem chi tiết"
                         >
                           <ViewIcon />
                         </IconButton>
@@ -463,7 +446,7 @@ const AdminTransactionManagement = () => {  const dispatch = useDispatch();
                   <TableRow>
                     <TableCell colSpan={8} align="center">
                       <Typography variant="body1" color="text.secondary">
-                        No transactions found
+                        Không tìm thấy giao dịch nào
                       </Typography>
                     </TableCell>
                   </TableRow>

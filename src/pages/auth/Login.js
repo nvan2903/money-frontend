@@ -11,7 +11,7 @@ import { LockOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
 import { login, clearError, clearMessage, resendVerification } from '../../store/slices/authSlice';
 import AlertMessage from '../../components/Common/AlertMessage';
 import Loader from '../../components/Common/Loader';
-import { authService } from '../../services/authService';
+
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -101,7 +101,7 @@ const Login = () => {
           <LockOutlined />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Sign In
+          Đăng nhập
         </Typography>
 
         {loading && <Loader />}
@@ -112,7 +112,7 @@ const Login = () => {
             required
             fullWidth
             id="username"
-            label="Username or Email"
+            label="Tên đăng nhập hoặc Email"
             name="username"
             autoComplete="username"
             autoFocus
@@ -126,7 +126,7 @@ const Login = () => {
             required
             fullWidth
             name="password"
-            label="Password"
+            label="Mật khẩu"
             type={showPassword ? 'text' : 'password'}
             id="password"
             autoComplete="current-password"
@@ -154,17 +154,17 @@ const Login = () => {
             sx={{ mt: 3, mb: 2 }}
             disabled={loading}
           >
-            Sign In
+            Đăng nhập
           </Button>
-          <Grid container>
+          <Grid container justifyContent="space-between">
             <Grid item xs>
               <Link component={RouterLink} to="/forgot-password" variant="body2">
-                Forgot password?
+                Quên mật khẩu?
               </Link>
             </Grid>
             <Grid item>
               <Link component={RouterLink} to="/register" variant="body2">
-                {"Don't have an account? Sign Up"}
+                {"Chưa có tài khoản? Đăng ký"}
               </Link>
             </Grid>
           </Grid>

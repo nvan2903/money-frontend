@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -7,14 +7,15 @@ import {
   clearTransactionMessage,
   setPage,
   setPerPage,
-  exportTransactions // Import exportTransactions
+  exportTransactions,
+  fetchSearchSuggestions,
 } from '../../store/slices/transactionSlice';
 import {
   Box, Paper, Typography, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, TablePagination, IconButton, Button, Chip, 
   Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
   Alert, TextField, MenuItem, InputAdornment, Grid, Tooltip,
-  Menu // Ensure Menu is imported
+  Menu, Autocomplete, Collapse, Stack, Badge
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -23,16 +24,19 @@ import {
   Search as SearchIcon,
   FilterList as FilterIcon,
   FileDownload as FileDownloadIcon,
-  PictureAsPdf as PdfIcon, // Added for PDF
-  Description as ExcelIcon, // Added for Excel (generic doc icon)
-  TableChart as CsvIcon // Added for CSV (table/sheet icon)
+  PictureAsPdf as PdfIcon,
+  Description as ExcelIcon,
+  TableChart as CsvIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
+  Clear as ClearIcon
 } from '@mui/icons-material';
-import { fetchCategories } from '../../store/slices/categorySlice'; // Keep this if it was added previously
+import { fetchCategories } from '../../store/slices/categorySlice';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 const TransactionList = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
   const {
     transactions,
     loading,
@@ -41,27 +45,48 @@ const TransactionList = () => {
     success,
     page,
     total,
-    perPage
+    perPage,
+    searchSuggestions
   } = useSelector(state => state.transactions);
   
-  const { categories } = useSelector(state => state.categories); // Keep this
-  const [exportMenuAnchorEl, setExportMenuAnchorEl] = useState(null); // Added for export menu
+  const { categories } = useSelector(state => state.categories);
+  const [exportMenuAnchorEl, setExportMenuAnchorEl] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [transactionToDelete, setTransactionToDelete] = useState(null);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);  const [filtersOpen, setFiltersOpen] = useState(false);  
   const [filters, setFilters] = useState({
     search: '',
     type: '',
     category_id: '',
-    date_from: '',
-    date_to: '',
-    amount_min: '',
-    amount_max: ''
+    start_date: '',
+    end_date: '',
+    min_amount: '',
+    max_amount: '',
+    sort_by: 'date',
+    sort_order: 'desc'
+  });
+  
+  const [quickFilters, setQuickFilters] = useState({
+    today: false,
+    thisWeek: false,
+    thisMonth: false,
+    highValue: false
   });
 
-  // Load categories on component mount
+  // Toggle filters visibility
+  const toggleFilters = () => {
+    setFiltersOpen(prev => !prev);
+  };
+
+  // Compute active filter count
+  const activeFilterCount = useMemo(() => {
+    return Object.values(filters).filter(value => value !== '' && value !== null).length +
+           Object.values(quickFilters).filter(Boolean).length;
+  }, [filters, quickFilters]);
+
+  // Load categories and search suggestions on component mount
   useEffect(() => {
     dispatch(fetchCategories());
+    dispatch(fetchSearchSuggestions());
   }, [dispatch]);
   
   // Function to load transactions with filters
@@ -79,7 +104,8 @@ const TransactionList = () => {
     
     dispatch(fetchTransactions(queryParams));
   }, [dispatch, page, perPage, filters]);
-    // Load transactions when page, perPage or filters change
+
+  // Load transactions when page, perPage or filters change
   useEffect(() => {
     loadTransactions();
   }, [loadTransactions]);
@@ -120,8 +146,8 @@ const TransactionList = () => {
     setDeleteDialogOpen(false);
     setTransactionToDelete(null);
   };
-  
-  const handleEditTransaction = (id) => {
+
+  const handleEdit = (id) => {
     navigate(`/transactions/edit/${id}`);
   };
   
@@ -129,13 +155,14 @@ const TransactionList = () => {
     navigate('/transactions/add');
   };
   
-  const handleExportMenuOpen = (event) => { // Added
+  const handleExportMenuOpen = (event) => {
     setExportMenuAnchorEl(event.currentTarget);
   };
 
-  const handleExportMenuClose = () => { // Added
+  const handleExportMenuClose = () => {
     setExportMenuAnchorEl(null);
   };
+
   const handleExportTransactions = async (format) => {
     try {
       const action = await dispatch(exportTransactions({ format, filters }));
@@ -174,79 +201,133 @@ const TransactionList = () => {
     handleExportMenuClose();
   };
   
-  const handleFilterChange = (e) => {
-    setFilters({
-      ...filters,
-      [e.target.name]: e.target.value
-    });
+  // Handle quick filter toggle
+  const handleQuickFilter = (filterType) => {
+    const newQuickFilters = { ...quickFilters, [filterType]: !quickFilters[filterType] };
+    setQuickFilters(newQuickFilters);
+    
+    const today = new Date().toISOString().split('T')[0];
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    let newFilters = { ...filters };
+    
+    // Clear date filters first
+    newFilters.start_date = '';
+    newFilters.end_date = '';
+    newFilters.min_amount = '';
+    
+    if (newQuickFilters.today) {
+      newFilters.start_date = today;
+      newFilters.end_date = today;
+    } else if (newQuickFilters.thisWeek) {
+      newFilters.start_date = weekAgo;
+      newFilters.end_date = today;
+    } else if (newQuickFilters.thisMonth) {
+      newFilters.start_date = monthAgo;
+      newFilters.end_date = today;
+    }
+      if (newQuickFilters.highValue) {
+      newFilters.min_amount = '1000000'; // 1 million VND
+    }
+    
+    setFilters(newFilters);
+    dispatch(setPage(1)); // Reset to first page
   };
   
+  const handleFilterChange = (field, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Clear quick filters if manual filters are being used
+    if (field === 'start_date' || field === 'end_date' || field === 'min_amount') {
+      setQuickFilters({
+        today: false,
+        thisWeek: false,
+        thisMonth: false,
+        highValue: false
+      });
+    }
+  };
+
   const handleFilterSubmit = (e) => {
     e.preventDefault();
-    dispatch(setPage(1)); // Reset to first page
-    loadTransactions();
   };
-  
+
+  // Clear all filters
   const handleClearFilters = () => {
     setFilters({
       search: '',
       type: '',
       category_id: '',
-      date_from: '',
-      date_to: '',
-      amount_min: '',
-      amount_max: ''
+      start_date: '',
+      end_date: '',
+      min_amount: '',
+      max_amount: '',
+      sort_by: 'date',
+      sort_order: 'desc'
     });
+    
+    setQuickFilters({
+      today: false,
+      thisWeek: false,
+      thisMonth: false,
+      highValue: false
+    });
+    
     dispatch(setPage(1));
   };
-  
-  const toggleFilters = () => {
-    setFiltersOpen(!filtersOpen);
+
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('vi-VN');
   };
   
   return (
     <Box sx={{ flexGrow: 1, p: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Transactions
+          Giao dịch
         </Typography>
-        <Box> {/* Wrapper for buttons */}
+        <Box>
           <Button
             variant="contained"
             color="primary"
             startIcon={<AddIcon />}
             onClick={handleAddTransaction}
-            sx={{ mr: 1 }} // Add margin to separate buttons
+            sx={{ mr: 1 }}
           >
-            Add Transaction
+            Thêm giao dịch
           </Button>
-          <Button // Added Export Button
+          <Button
             variant="outlined"
             color="secondary"
             startIcon={<FileDownloadIcon />}
             onClick={handleExportMenuOpen}
           >
-            Export Report
+            Xuất báo cáo
           </Button>
-          <Menu // Added Export Menu
+          <Menu
             anchorEl={exportMenuAnchorEl}
             open={Boolean(exportMenuAnchorEl)}
             onClose={handleExportMenuClose}
             PaperProps={{
               style: {
-                maxHeight: 48 * 4.5, // Adjust based on number of items
+                maxHeight: 48 * 4.5,
                 width: '20ch',
               },
             }}
           >
             <MenuItem onClick={() => handleExportTransactions('pdf')}>
-              <PdfIcon sx={{ mr: 1 }} /> Export as PDF
+              <PdfIcon sx={{ mr: 1 }} /> Xuất PDF
             </MenuItem>
             <MenuItem onClick={() => handleExportTransactions('excel')}>
-              <ExcelIcon sx={{ mr: 1 }} /> Export as Excel
+              <ExcelIcon sx={{ mr: 1 }} /> Xuất Excel
             </MenuItem>
             <MenuItem onClick={() => handleExportTransactions('csv')}>
-              <CsvIcon sx={{ mr: 1 }} /> Export as CSV
+              <CsvIcon sx={{ mr: 1 }} /> Xuất CSV
             </MenuItem>
           </Menu>
         </Box>
@@ -265,68 +346,109 @@ const TransactionList = () => {
           {error}
         </Alert>
       )}
-      
-      {/* Search and filter bar */}
+
+      {/* Enhanced search and filter bar */}
       <Paper sx={{ p: 2, mb: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: filtersOpen ? 2 : 0 }}>          <TextField
-            label="Search transactions by description, amount, or notes"
-            name="search"
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: filtersOpen ? 2 : 0 }}>
+          {/* Enhanced search with autocomplete */}
+          <Autocomplete
+            freeSolo
+            options={searchSuggestions}
             value={filters.search}
-            onChange={handleFilterChange}
-            variant="outlined"
-            size="small"
+            onChange={(event, newValue) => handleFilterChange('search', newValue || '')}
+            onInputChange={(event, newInputValue) => handleFilterChange('search', newInputValue)}
             sx={{ width: { xs: '100%', sm: '40%' } }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                handleFilterSubmit(e);
-              }
-            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Tìm kiếm theo ghi chú, danh mục..."
+                variant="outlined"
+                size="small"
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            )}
           />
-          <Button
-            startIcon={<FilterIcon />}
-            onClick={toggleFilters}
-            color="primary"
-          >
-            {filtersOpen ? 'Hide Filters' : 'Show Filters'}
-          </Button>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* Quick filter chips */}
+            <Stack direction="row" spacing={1} sx={{ mr: 2 }}>
+              <Chip
+                label="Hôm nay"
+                color={quickFilters.today ? "primary" : "default"}
+                onClick={() => handleQuickFilter('today')}
+                variant={quickFilters.today ? "filled" : "outlined"}
+                size="small"
+              />
+              <Chip
+                label="Tuần này"
+                color={quickFilters.thisWeek ? "primary" : "default"}
+                onClick={() => handleQuickFilter('thisWeek')}
+                variant={quickFilters.thisWeek ? "filled" : "outlined"}
+                size="small"
+              />
+              <Chip
+                label="Tháng này"
+                color={quickFilters.thisMonth ? "primary" : "default"}
+                onClick={() => handleQuickFilter('thisMonth')}
+                variant={quickFilters.thisMonth ? "filled" : "outlined"}
+                size="small"
+              />              <Chip
+                label="Giá trị cao (>1tr đ)"
+                color={quickFilters.highValue ? "primary" : "default"}
+                onClick={() => handleQuickFilter('highValue')}
+                variant={quickFilters.highValue ? "filled" : "outlined"}
+                size="small"
+              />
+            </Stack>
+            
+            <Badge badgeContent={activeFilterCount} color="primary">
+              <Button
+                variant="outlined"
+                startIcon={filtersOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                endIcon={<FilterIcon />}
+                onClick={toggleFilters}
+              >
+                Bộ lọc
+              </Button>
+            </Badge>
+          </Box>
         </Box>
         
-        {filtersOpen && (
+        {/* Collapsible advanced filters */}
+        <Collapse in={filtersOpen}>
           <Box component="form" onSubmit={handleFilterSubmit} sx={{ mt: 2 }}>
             <Grid container spacing={2}>
               <Grid item xs={12} md={3}>
                 <TextField
                   select
                   fullWidth
-                  label="Type"
-                  name="type"
+                  label="Loại giao dịch"
                   value={filters.type}
-                  onChange={handleFilterChange}
+                  onChange={(e) => handleFilterChange('type', e.target.value)}
                   size="small"
                 >
-                  <MenuItem value="">All</MenuItem>
-                  <MenuItem value="income">Income</MenuItem>
-                  <MenuItem value="expense">Expense</MenuItem>
+                  <MenuItem value="">Tất cả</MenuItem>
+                  <MenuItem value="income">Thu nhập</MenuItem>
+                  <MenuItem value="expense">Chi tiêu</MenuItem>
                 </TextField>
               </Grid>
               <Grid item xs={12} md={3}>
                 <TextField
                   select
                   fullWidth
-                  label="Category"
-                  name="category_id"
+                  label="Danh mục"
                   value={filters.category_id}
-                  onChange={handleFilterChange}
+                  onChange={(e) => handleFilterChange('category_id', e.target.value)}
                   size="small"
                 >
-                  <MenuItem value="">All</MenuItem>
+                  <MenuItem value="">Tất cả</MenuItem>
                   {categories && categories.map((category) => (
                     <MenuItem key={category._id} value={category._id}>
                       {category.name}
@@ -337,11 +459,10 @@ const TransactionList = () => {
               <Grid item xs={12} md={3}>
                 <TextField
                   fullWidth
-                  label="From Date"
-                  name="date_from"
+                  label="Từ ngày"
                   type="date"
-                  value={filters.date_from}
-                  onChange={handleFilterChange}
+                  value={filters.start_date}
+                  onChange={(e) => handleFilterChange('start_date', e.target.value)}
                   size="small"
                   InputLabelProps={{ shrink: true }}
                 />
@@ -349,11 +470,10 @@ const TransactionList = () => {
               <Grid item xs={12} md={3}>
                 <TextField
                   fullWidth
-                  label="To Date"
-                  name="date_to"
+                  label="Đến ngày"
                   type="date"
-                  value={filters.date_to}
-                  onChange={handleFilterChange}
+                  value={filters.end_date}
+                  onChange={(e) => handleFilterChange('end_date', e.target.value)}
                   size="small"
                   InputLabelProps={{ shrink: true }}
                 />
@@ -361,42 +481,50 @@ const TransactionList = () => {
               <Grid item xs={12} md={3}>
                 <TextField
                   fullWidth
-                  label="Min Amount"
-                  name="amount_min"
+                  label="Số tiền tối thiểu"
                   type="number"
-                  value={filters.amount_min}
-                  onChange={handleFilterChange}
+                  value={filters.min_amount}
+                  onChange={(e) => handleFilterChange('min_amount', e.target.value)}
                   size="small"
                   InputProps={{
-                    startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                    startAdornment: <InputAdornment position="start">₫</InputAdornment>,
                   }}
                 />
               </Grid>
               <Grid item xs={12} md={3}>
                 <TextField
                   fullWidth
-                  label="Max Amount"
-                  name="amount_max"
+                  label="Số tiền tối đa"
                   type="number"
-                  value={filters.amount_max}
-                  onChange={handleFilterChange}
+                  value={filters.max_amount}
+                  onChange={(e) => handleFilterChange('max_amount', e.target.value)}
                   size="small"
                   InputProps={{
-                    startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                    startAdornment: <InputAdornment position="start">₫</InputAdornment>,
                   }}
                 />
               </Grid>
-              <Grid item xs={12} md={3} sx={{ display: 'flex', gap: 1 }}>
-                <Button type="submit" variant="contained" fullWidth>
-                  Apply Filters
+              <Grid item xs={12} md={6} sx={{ display: 'flex', gap: 1 }}>
+                <Button 
+                  type="submit" 
+                  variant="contained" 
+                  startIcon={<SearchIcon />}
+                  sx={{ flex: 1 }}
+                >
+                  Áp dụng bộ lọc
                 </Button>
-                <Button variant="outlined" onClick={handleClearFilters} fullWidth>
-                  Clear
+                <Button 
+                  variant="outlined" 
+                  onClick={handleClearFilters}
+                  startIcon={<ClearIcon />}
+                  sx={{ flex: 1 }}
+                >
+                  Xóa bộ lọc
                 </Button>
               </Grid>
             </Grid>
           </Box>
-        )}
+        </Collapse>
       </Paper>
       
       {/* Transactions table */}
@@ -405,68 +533,79 @@ const TransactionList = () => {
           <Table stickyHeader aria-label="transactions table">
             <TableHead>
               <TableRow>
-                <TableCell>Date</TableCell>
-                <TableCell>Category</TableCell>
-                <TableCell>Type</TableCell>
-                <TableCell>Amount</TableCell>
-                <TableCell>Note</TableCell>
-                <TableCell align="right">Actions</TableCell>
+                <TableCell>Ngày</TableCell>
+                <TableCell>Danh mục</TableCell>
+                <TableCell>Loại</TableCell>
+                <TableCell>Số tiền</TableCell>
+                <TableCell>Ghi chú</TableCell>
+                <TableCell align="right">Thao tác</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center">
-                    Loading...
+                    Đang tải...
                   </TableCell>
-                </TableRow>
-              ) : transactions && transactions.length > 0 ? (
+                </TableRow>              ) : transactions && transactions.length > 0 ? (
                 transactions.map((transaction) => (
                   <TableRow key={transaction._id} hover>
-                    <TableCell>
-                      {new Date(transaction.date).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>{transaction.category_name}</TableCell>
+                    <TableCell>{formatDate(transaction.date)}</TableCell>
                     <TableCell>
                       <Chip
-                        label={transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
+                        label={transaction.category_name}
+                        size="small"
+                        variant="outlined"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={transaction.type === 'income' ? 'Thu nhập' : 'Chi tiêu'}
                         color={transaction.type === 'income' ? 'success' : 'error'}
                         size="small"
                       />
                     </TableCell>
-                    <TableCell sx={{ 
-                      color: transaction.type === 'income' ? 'success.main' : 'error.main',
-                      fontWeight: 'bold' 
-                    }}>
-                      {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                    <TableCell>
+                      <Typography
+                        variant="body2"
+                        color={transaction.type === 'income' ? 'success.main' : 'error.main'}
+                        fontWeight="bold"
+                      >
+                        {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                      </Typography>
                     </TableCell>
-                    <TableCell>{transaction.note || '-'}</TableCell>
+                    <TableCell>
+                      <Typography variant="body2" noWrap sx={{ maxWidth: 200 }}>
+                        {transaction.note || 'Không có ghi chú'}
+                      </Typography>
+                    </TableCell>
                     <TableCell align="right">
-                      <Tooltip title="Edit">
-                        <IconButton 
-                          aria-label="edit" 
+                      <Tooltip title="Chỉnh sửa">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleEdit(transaction._id)}
                           color="primary"
-                          onClick={() => handleEditTransaction(transaction._id)}
                         >
                           <EditIcon />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Delete">
-                        <IconButton 
-                          aria-label="delete" 
-                          color="error"
+                      <Tooltip title="Xóa">
+                        <IconButton
+                          size="small"
                           onClick={() => handleDeleteClick(transaction)}
+                          color="error"
                         >
                           <DeleteIcon />
                         </IconButton>
                       </Tooltip>
                     </TableCell>
-                  </TableRow>
-                ))
+                  </TableRow>                ))
               ) : (
                 <TableRow>
                   <TableCell colSpan={6} align="center">
-                    No transactions found
+                    <Typography variant="body1" color="text.secondary">
+                      Không tìm thấy giao dịch nào
+                    </Typography>
                   </TableCell>
                 </TableRow>
               )}
@@ -474,14 +613,17 @@ const TransactionList = () => {
           </Table>
         </TableContainer>
         
+        {/* Table pagination */}
         <TablePagination
           rowsPerPageOptions={[5, 10, 25, 50]}
           component="div"
           count={total || 0}
           rowsPerPage={perPage}
-          page={(page > 0 ? page - 1 : 0)}
+          page={(page || 1) - 1}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage="Số hàng mỗi trang:"
+          labelDisplayedRows={({ from, to, count }) => `${from}-${to} của ${count}`}
         />
       </Paper>
       
@@ -493,21 +635,20 @@ const TransactionList = () => {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          Delete Transaction
+          Xóa giao dịch
         </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Are you sure you want to delete this transaction{' '}
-            {transactionToDelete && `(${transactionToDelete.category_name}: $${transactionToDelete.amount})`}?
-            This action cannot be undone.
+        <DialogContent>          <DialogContentText id="alert-dialog-description">
+            Bạn có chắc chắn muốn xóa giao dịch này{' '}
+            {transactionToDelete && `(${transactionToDelete.category_name}: ${formatCurrency(transactionToDelete.amount)})`}?
+            Hành động này không thể hoàn tác.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDeleteCancel} color="primary">
-            Cancel
+            Hủy
           </Button>
           <Button onClick={handleDeleteConfirm} color="error" autoFocus>
-            Delete
+            Xóa
           </Button>
         </DialogActions>
       </Dialog>

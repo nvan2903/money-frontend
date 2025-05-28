@@ -112,7 +112,7 @@ const CategoryForm = () => {
                   fullWidth
                   id="name"
                   name="name"
-                  label="Category Name"
+                  label="Tên danh mục"
                   value={formik.values.name}
                   onChange={formik.handleChange}
                   error={formik.touched.name && Boolean(formik.errors.name)}
@@ -125,7 +125,7 @@ const CategoryForm = () => {
                   fullWidth
                   id="type"
                   name="type"
-                  label="Category Type"
+                  label="Loại danh mục"
                   select
                   value={formik.values.type}
                   onChange={formik.handleChange}
@@ -133,8 +133,8 @@ const CategoryForm = () => {
                   helperText={formik.touched.type && formik.errors.type}
                   disabled={isEditing && category?.is_default}
                 >
-                  <MenuItem value="income">Income</MenuItem>
-                  <MenuItem value="expense">Expense</MenuItem>
+                  <MenuItem value="income">Thu nhập</MenuItem>
+                  <MenuItem value="expense">Chi tiêu</MenuItem>
                 </TextField>
                 {isEditing && category?.is_default && (
                   <Typography variant="caption" color="text.secondary">
@@ -149,7 +149,7 @@ const CategoryForm = () => {
                   color="secondary"
                   onClick={() => navigate('/categories')}
                 >
-                  Cancel
+                  Hủy
                 </Button>
                 <Button
                   type="submit"
@@ -160,9 +160,9 @@ const CategoryForm = () => {
                   {loading ? (
                     <CircularProgress size={24} />
                   ) : isEditing ? (
-                    'Update Category'
+                    'Cập nhật danh mục'
                   ) : (
-                    'Add Category'
+                    'Thêm danh mục'
                   )}
                 </Button>
               </Grid>

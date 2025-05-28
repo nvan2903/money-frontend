@@ -19,10 +19,10 @@ const AdminLayout = () => {
   const location = useLocation();
 
   const adminMenuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin/dashboard' },
-    { text: 'User Management', icon: <UsersIcon />, path: '/admin/users' },
-    { text: 'Transactions', icon: <TransactionsIcon />, path: '/admin/transactions' },
-    { text: 'Reports', icon: <ReportsIcon />, path: '/admin/reports' }
+    { text: 'Bảng điều khiển', icon: <DashboardIcon />, path: '/admin/dashboard' },
+    { text: 'Quản lý người dùng', icon: <UsersIcon />, path: '/admin/users' },
+    { text: 'Giao dịch', icon: <TransactionsIcon />, path: '/admin/transactions' },
+    { text: 'Báo cáo', icon: <ReportsIcon />, path: '/admin/reports' }
   ];
 
   const handleBackToMain = () => {
@@ -40,14 +40,14 @@ const AdminLayout = () => {
           [`& .MuiDrawer-paper`]: {
             width: drawerWidth,
             boxSizing: 'border-box',
-            position: 'relative',
+            position: 'static',
             height: '100%'
           },
         }}
       >
         <Toolbar sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
           <Typography variant="h6" noWrap component="div" color="primary">
-            Admin Panel
+            Trang quản trị
           </Typography>
         </Toolbar>
         <Divider />
@@ -61,7 +61,7 @@ const AdminLayout = () => {
           <ListItemIcon>
             <BackIcon />
           </ListItemIcon>
-          <ListItemText primary="Back to Main" />
+          <ListItemText primary="Quay lại trang chính" />
         </ListItem>
         
         <Divider />

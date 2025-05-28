@@ -116,8 +116,8 @@ const CategoryList = () => {
     <Container maxWidth="md">
       <Box sx={{ flexGrow: 1, p: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Categories
+          <Typography variant="h4" gutterBottom>
+            Danh sách danh mục
           </Typography>
           <Button
             variant="contained"
@@ -125,7 +125,7 @@ const CategoryList = () => {
             startIcon={<AddIcon />}
             onClick={handleAddCategory}
           >
-            Add Category
+            Thêm danh mục
           </Button>
         </Box>
         
@@ -146,7 +146,7 @@ const CategoryList = () => {
         <Paper sx={{ p: 2, mb: 2 }}>
           <TextField
             fullWidth
-            placeholder="Search categories by name or type..."
+            placeholder="Tìm kiếm danh mục theo tên hoặc loại..."
             value={searchTerm}
             onChange={handleSearchChange}
             size="small"
@@ -168,15 +168,15 @@ const CategoryList = () => {
               aria-label="category tabs"
               centered
             >
-              <Tab label="All Categories" />
-              <Tab label="Income Categories" />
-              <Tab label="Expense Categories" />
+              <Tab label="Tất cả danh mục" />
+              <Tab label="Danh mục thu nhập" />
+              <Tab label="Danh mục chi tiêu" />
             </Tabs>
           </Box>
           
           {loading ? (
             <Box sx={{ p: 3, textAlign: 'center' }}>
-              Loading categories...
+              Đang tải danh mục...
             </Box>
           ) : displayCategories().length > 0 ? (
             <List>
@@ -187,10 +187,10 @@ const CategoryList = () => {
                       primary={category.name} 
                     />
                     <Chip
-                      label={category.type.charAt(0).toUpperCase() + category.type.slice(1)}
+                      label={category.type === 'income' ? 'Thu nhập' : 'Chi tiêu'}
                       color={category.type === 'income' ? 'success' : 'error'}
                       size="small"
-                      sx={{ mr: 2 }}
+                      sx={{ mr: 8 }}
                     />
                     <ListItemSecondaryAction>
                       <IconButton 
@@ -220,11 +220,7 @@ const CategoryList = () => {
           ) : (
             <Box sx={{ p: 3, textAlign: 'center' }}>
               <Typography variant="body1" color="text.secondary">
-                {tabValue === 0
-                  ? 'No categories found'
-                  : tabValue === 1
-                  ? 'No income categories found'
-                  : 'No expense categories found'}
+                Không có danh mục nào
               </Typography>
               <Button 
                 variant="contained" 
@@ -232,7 +228,7 @@ const CategoryList = () => {
                 onClick={handleAddCategory}
                 sx={{ mt: 2 }}
               >
-                Add your first category
+                Thêm danh mục đầu tiên của bạn
               </Button>
             </Box>
           )}
@@ -247,20 +243,20 @@ const CategoryList = () => {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          Delete Category
+          Xóa danh mục
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Are you sure you want to delete the category "{categoryToDelete?.name}"?
-            This will not delete associated transactions, but they will no longer be associated with this category.
+            Bạn có chắc chắn muốn xóa danh mục "{categoryToDelete?.name}"?
+            Điều này sẽ không xóa các giao dịch liên quan, nhưng chúng sẽ không còn được liên kết với danh mục này nữa.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDeleteCancel} color="primary">
-            Cancel
+            Hủy
           </Button>
           <Button onClick={handleDeleteConfirm} color="error" autoFocus>
-            Delete
+            Xóa
           </Button>
         </DialogActions>
       </Dialog>

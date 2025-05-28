@@ -79,10 +79,24 @@ export const fetchSystemStats = createAsyncThunk(
   }
 );
 
+// Fetch user statistics (admin access to any user)
+export const fetchUserStatistics = createAsyncThunk(
+  'admin/fetchUserStatistics',
+  async ({ userId, filters = {} }, { rejectWithValue }) => {
+    try {
+      const response = await adminService.getUserStatistics(userId, filters);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch user statistics');
+    }
+  }
+);
+
 // Initial state
 const initialState = {
   users: [],
   user: null,
+  userStatistics: null,
   transactions: [],
   systemStats: {
     user_count: 0,
@@ -223,8 +237,7 @@ const adminSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      
-      // Fetch system stats cases
+        // Fetch system stats cases
       .addCase(fetchSystemStats.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -234,6 +247,20 @@ const adminSlice = createSlice({
         state.systemStats = action.payload;
       })
       .addCase(fetchSystemStats.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Fetch user statistics cases
+      .addCase(fetchUserStatistics.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserStatistics.fulfilled, (state, action) => {
+        state.loading = false;
+        state.userStatistics = action.payload;
+      })
+      .addCase(fetchUserStatistics.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

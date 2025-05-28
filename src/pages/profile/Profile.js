@@ -151,7 +151,7 @@ const Profile = () => {
     <Container maxWidth="md">
       <Box sx={{ flexGrow: 1, p: 2 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Profile Settings
+          Cài đặt hồ sơ
         </Typography>
         
         {/* Success message */}
@@ -173,7 +173,7 @@ const Profile = () => {
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
               <ProfileIcon color="primary" sx={{ mr: 1 }} />
-              <Typography variant="h6">Account Information</Typography>
+              <Typography variant="h6">Thông tin tài khoản</Typography>
             </Box>
             <form onSubmit={profileFormik.handleSubmit}>
               <Grid container spacing={3}>
@@ -182,7 +182,7 @@ const Profile = () => {
                     fullWidth
                     id="first_name"
                     name="first_name"
-                    label="First Name"
+                    label="Tên"
                     value={profileFormik.values.first_name}
                     onChange={profileFormik.handleChange}
                     error={profileFormik.touched.first_name && Boolean(profileFormik.errors.first_name)}
@@ -194,7 +194,7 @@ const Profile = () => {
                     fullWidth
                     id="last_name"
                     name="last_name"
-                    label="Last Name"
+                    label="Họ"
                     value={profileFormik.values.last_name}
                     onChange={profileFormik.handleChange}
                     error={profileFormik.touched.last_name && Boolean(profileFormik.errors.last_name)}
@@ -206,7 +206,7 @@ const Profile = () => {
                     fullWidth
                     id="email"
                     name="email"
-                    label="Email Address"
+                    label="Địa chỉ Email"
                     value={profileFormik.values.email}
                     onChange={profileFormik.handleChange}
                     error={profileFormik.touched.email && Boolean(profileFormik.errors.email)}
@@ -220,7 +220,7 @@ const Profile = () => {
                     color="primary"
                     disabled={loading}
                   >
-                    {loading ? <CircularProgress size={24} /> : 'Update Profile'}
+                    {loading ? <CircularProgress size={24} /> : 'Cập nhật hồ sơ'}
                   </Button>
                 </Grid>
               </Grid>
@@ -233,17 +233,17 @@ const Profile = () => {
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <SecurityIcon color="primary" sx={{ mr: 1 }} />
-              <Typography variant="h6">Security</Typography>
+              <Typography variant="h6">Bảo mật</Typography>
             </Box>
             <Typography variant="body2" color="text.secondary" paragraph>
-              Change your password to keep your account secure.
+              Thay đổi mật khẩu của bạn để giữ cho tài khoản của bạn được bảo mật.
             </Typography>
             <Button
               variant="outlined"
               color="primary"
               onClick={handleOpenPasswordDialog}
             >
-              Change Password
+              Đổi mật khẩu
             </Button>
           </CardContent>
         </Card>
@@ -253,17 +253,17 @@ const Profile = () => {
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <DeleteIcon color="error" sx={{ mr: 1 }} />
-              <Typography variant="h6" color="error">Danger Zone</Typography>
+              <Typography variant="h6" color="error">Khu vực nguy hiểm</Typography>
             </Box>
             <Typography variant="body2" color="text.secondary" paragraph>
-              Once you delete your account, there is no going back. Please be certain.
+              Một khi bạn xóa tài khoản, sẽ không có cách nào để khôi phục lại. Vui lòng chắc chắn.
             </Typography>
             <Button
               variant="outlined"
               color="error"
               onClick={handleOpenDeleteDialog}
             >
-              Delete Account
+              Xóa tài khoản
             </Button>
           </CardContent>
         </Card>
@@ -276,10 +276,10 @@ const Profile = () => {
         aria-labelledby="password-dialog-title"
       >
         <form onSubmit={passwordFormik.handleSubmit}>
-          <DialogTitle id="password-dialog-title">Change Password</DialogTitle>
+          <DialogTitle id="password-dialog-title">Đổi mật khẩu</DialogTitle>
           <DialogContent>
             <DialogContentText sx={{ mb: 2 }}>
-              To change your password, please enter your current password and then your new password.
+              Để thay đổi mật khẩu của bạn, vui lòng nhập mật khẩu hiện tại của bạn và sau đó là mật khẩu mới của bạn.
             </DialogContentText>
             <Grid container spacing={2}>
               <Grid item xs={12}>
@@ -288,7 +288,7 @@ const Profile = () => {
                   margin="dense"
                   id="current_password"
                   name="current_password"
-                  label="Current Password"
+                  label="Mật khẩu hiện tại"
                   type="password"
                   value={passwordFormik.values.current_password}
                   onChange={passwordFormik.handleChange}
@@ -302,7 +302,7 @@ const Profile = () => {
                   margin="dense"
                   id="new_password"
                   name="new_password"
-                  label="New Password"
+                  label="Mật khẩu mới"
                   type="password"
                   value={passwordFormik.values.new_password}
                   onChange={passwordFormik.handleChange}
@@ -316,7 +316,7 @@ const Profile = () => {
                   margin="dense"
                   id="confirm_password"
                   name="confirm_password"
-                  label="Confirm New Password"
+                  label="Xác nhận mật khẩu mới"
                   type="password"
                   value={passwordFormik.values.confirm_password}
                   onChange={passwordFormik.handleChange}
@@ -328,10 +328,10 @@ const Profile = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClosePasswordDialog} color="primary">
-              Cancel
+              Hủy
             </Button>
             <Button type="submit" color="primary" disabled={loading}>
-              {loading ? <CircularProgress size={24} /> : 'Change Password'}
+              {loading ? <CircularProgress size={24} /> : 'Đổi mật khẩu'}
             </Button>
           </DialogActions>
         </form>
@@ -345,19 +345,19 @@ const Profile = () => {
       >
         <form onSubmit={deleteFormik.handleSubmit}>
           <DialogTitle id="delete-dialog-title" color="error">
-            Delete Account
+            Xóa tài khoản
           </DialogTitle>
           <DialogContent>
             <DialogContentText sx={{ mb: 2 }}>
-              Warning: This action cannot be undone. All of your data, including transactions and categories, will be permanently deleted.
-              To confirm deletion, please enter your password.
+              Cảnh báo: Hành động này không thể hoàn tác. Tất cả dữ liệu của bạn, bao gồm giao dịch và danh mục, sẽ bị xóa vĩnh viễn.
+              Để xác nhận việc xóa, vui lòng nhập mật khẩu của bạn.
             </DialogContentText>
             <TextField
               fullWidth
               margin="dense"
               id="password"
               name="password"
-              label="Password"
+              label="Mật khẩu"
               type="password"
               value={deleteFormik.values.password}
               onChange={deleteFormik.handleChange}
@@ -367,10 +367,10 @@ const Profile = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseDeleteDialog} color="primary">
-              Cancel
+              Hủy
             </Button>
             <Button type="submit" color="error" disabled={loading}>
-              {loading ? <CircularProgress size={24} /> : 'Delete My Account'}
+              {loading ? <CircularProgress size={24} /> : 'Xóa tài khoản'}
             </Button>
           </DialogActions>
         </form>

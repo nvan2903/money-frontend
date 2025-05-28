@@ -12,6 +12,7 @@ import {
   TrendingDown as ExpenseIcon,
   AccountBalance as BalanceIcon
 } from '@mui/icons-material';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 // Chart components
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
@@ -92,66 +93,82 @@ const Dashboard = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Typography variant="h4" gutterBottom>
-        Dashboard
+        Bảng điều khiển
       </Typography>
       
       {/* Financial Summary */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={4}>
-          <Card raised>
+      <Grid container spacing={3} sx={{ mb: 4, width: '100%' }} wrap="nowrap">
+        <Grid item xs={12} md={4} sx={{ flex: 1, minWidth: 0 }}>
+          <Card raised sx={{ width: '100%' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <BalanceIcon sx={{ color: 'text.secondary', mr: 1 }} />
                 <Typography variant="h6" component="div">
-                  Balance
+                  Số dư
                 </Typography>
               </Box>
-              <Typography variant="h4" component="div" sx={{ mt: 2 }}>
-                ${summary.balance.toFixed(2)}
+              <Typography variant="h4" component="div" sx={{ mt: 2, wordBreak: 'break-all' }}>
+                {formatCurrency(summary.balance)}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
         
-        <Grid item xs={12} sm={4}>
-          <Card raised>
+        <Grid item xs={12} md={4} sx={{ flex: 1, minWidth: 0 }}>
+          <Card raised sx={{ width: '100%' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <IncomeIcon sx={{ color: 'success.main', mr: 1 }} />
                 <Typography variant="h6" component="div">
-                  Income
+                  Thu nhập
                 </Typography>
               </Box>
-              <Typography variant="h4" component="div" sx={{ mt: 2, color: 'success.main' }}>
-                ${summary.totalIncome.toFixed(2)}
+              <Typography variant="h4" component="div" sx={{ mt: 2, color: 'success.main', wordBreak: 'break-all' }}>
+                {formatCurrency(summary.totalIncome)}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
         
-        <Grid item xs={12} sm={4}>
-          <Card raised>
+        <Grid item xs={12} md={4} sx={{ flex: 1, minWidth: 0 }}>
+          <Card raised sx={{ width: '100%' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <ExpenseIcon sx={{ color: 'error.main', mr: 1 }} />
                 <Typography variant="h6" component="div">
-                  Expense
+                  Chi tiêu
                 </Typography>
               </Box>
-              <Typography variant="h4" component="div" sx={{ mt: 2, color: 'error.main' }}>
-                ${summary.totalExpense.toFixed(2)}
+              <Typography variant="h4" component="div" sx={{ mt: 2, color: 'error.main', wordBreak: 'break-all' }}>
+                {formatCurrency(summary.totalExpense)}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
+
+            {/* Hàng thứ 2: Nút thêm giao dịch mới căn giữa */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12}>
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Button 
+              variant="contained" 
+              color="primary" 
+              size="large"
+              onClick={() => window.location.href = '/transactions/add'}
+            >
+              Thêm giao dịch mới
+            </Button>
+          </Box>
+        </Grid>
+      </Grid>
       
-      <Grid container spacing={3}>
+      <Grid container spacing={3} sx={{ width: '100%' }}>
         {/* Expense Breakdown Chart */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2, height: 300 }}>
+        <Grid item xs={12} md={6} sx={{ flex: 1, minWidth: 0 }}>
+          <Paper sx={{ p: 2, height: 400, width: '100%' }}>
             <Typography variant="h6" gutterBottom>
-              Expense Breakdown
+              Phân tích chi tiêu
             </Typography>
             {expenseByCategory.length > 0 ? (
               <ResponsiveContainer width="100%" height="90%">
@@ -162,22 +179,22 @@ const Dashboard = () => {
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius={80}
+                    outerRadius={100}
                     fill={theme.palette.primary.main}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent, value }) => `${name}: ${(percent * 100).toFixed(0)}% (${formatCurrency(value)})`}
                   >
                     {expenseByCategory.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                  <Tooltip formatter={(value) => formatCurrency(value)} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80%' }}>
                 <Typography variant="body1" color="text.secondary">
-                  No expense data available
+                  Không có dữ liệu chi tiêu
                 </Typography>
               </Box>
             )}
@@ -185,10 +202,10 @@ const Dashboard = () => {
         </Grid>
         
         {/* Recent Transactions */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2, height: 300, overflow: 'auto' }}>
+        <Grid item xs={12} md={6} sx={{ flex: 1, minWidth: 0 }}>
+          <Paper sx={{ p: 2, height: 400, width: '100%', overflow: 'auto' }}>
             <Typography variant="h6" gutterBottom>
-              Recent Transactions
+              Giao dịch gần đây
             </Typography>
             {recentTransactions.length > 0 ? (
               <List>
@@ -205,10 +222,13 @@ const Dashboard = () => {
                               component="span" 
                               sx={{ 
                                 color: transaction.type === 'income' ? 'success.main' : 'error.main',
-                                fontWeight: 'bold'
+                                fontWeight: 'bold',
+                                wordBreak: 'break-all',
+                                minWidth: 100,
+                                textAlign: 'right'
                               }}
                             >
-                              {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                              {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
                             </Typography>
                           </Box>
                         }
@@ -233,25 +253,11 @@ const Dashboard = () => {
             ) : (
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80%' }}>
                 <Typography variant="body1" color="text.secondary">
-                  No recent transactions
+                  Không có giao dịch gần đây
                 </Typography>
               </Box>
             )}
           </Paper>
-        </Grid>
-        
-        {/* Call to Action */}
-        <Grid item xs={12}>
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-            <Button 
-              variant="contained" 
-              color="primary" 
-              size="large"
-              onClick={() => window.location.href = '/transactions/add'}
-            >
-              Add New Transaction
-            </Button>
-          </Box>
         </Grid>
       </Grid>
     </Box>

@@ -24,59 +24,33 @@ import {
 import { 
   fetchUser, 
   fetchAllTransactions,
+  fetchUserStatistics,
   toggleUserStatus,
   deleteUser,
   clearAdminError 
 } from '../../store/slices/adminSlice';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 const UserDetails = () => {
   const { userId } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user, transactions = [], loading, error } = useSelector(state => state.admin);
+  const { user, transactions = [], userStatistics, loading, error } = useSelector(state => state.admin);
   
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [transactionPage, setTransactionPage] = useState(1);
   const [transactionPerPage] = useState(10);
 
-  // User statistics
-  const [userStats, setUserStats] = useState({
-    totalTransactions: 0,
-    totalIncome: 0,
-    totalExpense: 0,
-    balance: 0
-  });
-
   useEffect(() => {
     if (userId) {
       dispatch(fetchUser(userId));
+      dispatch(fetchUserStatistics({ userId }));
       dispatch(fetchAllTransactions({ 
         user_id: userId, 
         page: transactionPage, 
         per_page: transactionPerPage 
       }));
-    }
-  }, [dispatch, userId, transactionPage, transactionPerPage]);
-
-  // Calculate user statistics
-  useEffect(() => {
-    if (transactions && transactions.length > 0) {
-      const totalIncome = transactions
-        .filter(t => t.type === 'income')
-        .reduce((sum, t) => sum + t.amount, 0);
-      
-      const totalExpense = transactions
-        .filter(t => t.type === 'expense')
-        .reduce((sum, t) => sum + t.amount, 0);
-
-      setUserStats({
-        totalTransactions: transactions.length,
-        totalIncome,
-        totalExpense,
-        balance: totalIncome - totalExpense
-      });
-    }
-  }, [transactions]);
+    }  }, [dispatch, userId, transactionPage, transactionPerPage]);
 
   const handleBack = () => {
     navigate('/admin/users');
@@ -112,10 +86,6 @@ const UserDetails = () => {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const formatAmount = (amount) => {
-    return `$${amount.toFixed(2)}`;
-  };
-
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
@@ -138,7 +108,7 @@ const UserDetails = () => {
     return (
       <Box sx={{ p: 3 }}>
         <Typography variant="h6" color="text.secondary">
-          User not found
+          Không tìm thấy người dùng
         </Typography>
       </Box>
     );
@@ -152,7 +122,7 @@ const UserDetails = () => {
           <BackIcon />
         </IconButton>
         <Typography variant="h4" gutterBottom sx={{ flexGrow: 1 }}>
-          User Details
+          Chi tiết người dùng
         </Typography>
         {user.role !== 'admin' && (
           <Stack direction="row" spacing={1}>
@@ -162,7 +132,7 @@ const UserDetails = () => {
               color={user.is_active ? 'warning' : 'success'}
               onClick={handleToggleStatus}
             >
-              {user.is_active ? 'Deactivate' : 'Activate'}
+              {user.is_active ? 'Ngưng hoạt động' : 'Kích hoạt'}
             </Button>
             <Button
               variant="outlined"
@@ -170,7 +140,7 @@ const UserDetails = () => {
               color="error"
               onClick={handleDeleteUser}
             >
-              Delete User
+              Xóa người dùng
             </Button>
           </Stack>
         )}
@@ -211,14 +181,14 @@ const UserDetails = () => {
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <DateIcon sx={{ mr: 1, color: 'text.secondary' }} />
                   <Typography variant="body1">
-                    Joined {formatDate(user.created_at)}
+                    Tham gia từ {formatDate(user.created_at)}
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <Typography variant="body1">
-                    Status: 
+                    Trạng thái: 
                     <Chip 
-                      label={user.is_active ? 'Active' : 'Inactive'} 
+                      label={user.is_active ? 'Đang hoạt động' : 'Ngưng hoạt động'} 
                       color={user.is_active ? 'success' : 'error'}
                       size="small"
                       sx={{ ml: 1 }}
@@ -239,11 +209,10 @@ const UserDetails = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <TransactionIcon sx={{ color: 'info.main', mr: 1 }} />
                     <Typography variant="h6" component="div">
-                      Transactions
+                      Giao dịch
                     </Typography>
-                  </Box>
-                  <Typography variant="h4" component="div" sx={{ mt: 1, color: 'info.main' }}>
-                    {userStats.totalTransactions}
+                  </Box>                  <Typography variant="h4" component="div" sx={{ mt: 1, color: 'info.main' }}>
+                    {userStatistics?.summary?.transaction_count || 0}
                   </Typography>
                 </CardContent>
               </Card>
@@ -255,11 +224,10 @@ const UserDetails = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <IncomeIcon sx={{ color: 'success.main', mr: 1 }} />
                     <Typography variant="h6" component="div">
-                      Total Income
+                      Tổng thu nhập
                     </Typography>
-                  </Box>
-                  <Typography variant="h4" component="div" sx={{ mt: 1, color: 'success.main' }}>
-                    {formatAmount(userStats.totalIncome)}
+                  </Box>                  <Typography variant="h4" component="div" sx={{ mt: 1, color: 'success.main' }}>
+                    {formatCurrency(userStatistics?.summary?.total_income || 0)}
                   </Typography>
                 </CardContent>
               </Card>
@@ -271,11 +239,10 @@ const UserDetails = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <ExpenseIcon sx={{ color: 'error.main', mr: 1 }} />
                     <Typography variant="h6" component="div">
-                      Total Expense
+                      Tổng chi tiêu
                     </Typography>
-                  </Box>
-                  <Typography variant="h4" component="div" sx={{ mt: 1, color: 'error.main' }}>
-                    {formatAmount(userStats.totalExpense)}
+                  </Box>                  <Typography variant="h4" component="div" sx={{ mt: 1, color: 'error.main' }}>
+                    {formatCurrency(userStatistics?.summary?.total_expense || 0)}
                   </Typography>
                 </CardContent>
               </Card>
@@ -287,18 +254,17 @@ const UserDetails = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <BalanceIcon sx={{ color: 'text.secondary', mr: 1 }} />
                     <Typography variant="h6" component="div">
-                      Net Balance
+                      Số dư ròng
                     </Typography>
-                  </Box>
-                  <Typography 
+                  </Box>                  <Typography 
                     variant="h4" 
                     component="div" 
                     sx={{ 
                       mt: 1,
-                      color: userStats.balance >= 0 ? 'success.main' : 'error.main'
+                      color: (userStatistics?.summary?.balance || 0) >= 0 ? 'success.main' : 'error.main'
                     }}
                   >
-                    {formatAmount(userStats.balance)}
+                    {formatCurrency(userStatistics?.summary?.balance || 0)}
                   </Typography>
                 </CardContent>
               </Card>
@@ -311,18 +277,18 @@ const UserDetails = () => {
       <Card>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            Recent Transactions
+            Giao dịch gần đây
           </Typography>
           <TableContainer>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Category</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell align="right">Amount</TableCell>
-                  <TableCell>Notes</TableCell>
+                  <TableCell>Ngày</TableCell>
+                  <TableCell>Mô tả</TableCell>
+                  <TableCell>Danh mục</TableCell>
+                  <TableCell>Loại</TableCell>
+                  <TableCell align="right">Số tiền</TableCell>
+                  <TableCell>Ghi chú</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -347,7 +313,7 @@ const UserDetails = () => {
                             fontWeight: 'bold'
                           }}
                         >
-                          {formatAmount(transaction.amount)}
+                          {formatCurrency(transaction.amount)}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -361,7 +327,7 @@ const UserDetails = () => {
                   <TableRow>
                     <TableCell colSpan={6} align="center">
                       <Typography variant="body1" color="text.secondary">
-                        No transactions found for this user
+                        Không tìm thấy giao dịch nào cho người dùng này
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -369,11 +335,10 @@ const UserDetails = () => {
               </TableBody>
             </Table>
           </TableContainer>
-          
-          {transactions && transactions.length > 0 && (
+            {transactions && transactions.length > 0 && (
             <TablePagination
               component="div"
-              count={userStats.totalTransactions}
+              count={userStatistics?.summary?.transaction_count || 0}
               page={transactionPage - 1}
               onPageChange={handleTransactionPageChange}
               rowsPerPage={transactionPerPage}
@@ -390,21 +355,19 @@ const UserDetails = () => {
         aria-labelledby="delete-dialog-title"
       >
         <DialogTitle id="delete-dialog-title" color="error">
-          Delete User
+          Xóa người dùng
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete user "{user.username}"? 
-            This action will permanently delete all user data including transactions and categories.
-            This action cannot be undone.
+            Bạn có chắc chắn muốn xóa người dùng "{user.username}"? Hành động này sẽ xóa vĩnh viễn toàn bộ dữ liệu người dùng bao gồm giao dịch và danh mục. Hành động này không thể hoàn tác.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={cancelDelete} color="primary">
-            Cancel
+            Hủy
           </Button>
           <Button onClick={confirmDelete} color="error" variant="contained">
-            Delete
+            Xóa
           </Button>
         </DialogActions>
       </Dialog>
